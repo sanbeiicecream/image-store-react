@@ -1,0 +1,22 @@
+.active{
+  border-bottom: 1px solid #fff;
+}
+a:hover{
+  color: #40a9dc;
+}
+
+a:active{
+  color: #096db6;
+  transition: color 250ms linear;
+}
+
+#root{
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main{
+  flex: 1;
+  padding: 30px 100px;
+}
