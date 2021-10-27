@@ -4,7 +4,7 @@
 
 ## 修改
 
-注意src/models/下的index.html文件
+注意src/models/下的index.js文件
 
 里面有三处使用到了的接口需要使用自己的
 
