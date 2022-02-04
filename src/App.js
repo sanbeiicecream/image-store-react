@@ -4,6 +4,7 @@ import {Switch, Route} from 'react-router-dom'
 import {lazy, Suspense} from 'react'
 import {Footer} from 'components/Footer'
 import {Loading} from './components/Loading'
+import styled from 'styled-components'
 
 const Home = lazy(() => import('./views/Home').then())
 const ViewHistory = lazy(() => import('./views/ViewHistory').then())
@@ -11,11 +12,16 @@ const About = lazy(() => import('./views/About').then())
 const Login = lazy(() => import('./views/Login').then())
 const Register = lazy(() => import('./views/Register').then())
 
+const Main = styled.div`
+  flex-grow: 1;
+  padding: 5vh;
+  overflow: auto;
+`
 function App() {
   return (
     <>
       <Header/>
-      <main>
+      <Main>
         <Suspense fallback={<Loading/>}>
           <Switch>
             <Route path="/" exact component={Home}/>
@@ -26,13 +32,9 @@ function App() {
             <Route path="/register" component={Register}/>
           </Switch>
         </Suspense>
-      </main>
+      </Main>
       <Footer/>
-    </
-    
-    
-    
-    >
+    </>
   )
 }
 

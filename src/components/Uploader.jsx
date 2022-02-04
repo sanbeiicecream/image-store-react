@@ -48,14 +48,15 @@ const Uploader = observer(() => {
   }, [])
   
   const bindWidthChange = () => {
-    store.setWidth(ref1.current.value)
+    store.setWidth(ref1.current)
   }
   
   const bindHeightChange = () => {
-    store.setHeight(ref2.current.value)
+    store.setHeight(ref2.current)
   }
   
   const {UserStore, ImageStore} = useStores()
+  
   const props = {
     beforeUpload: (file) => {
       if (UserStore.currentUser === null) {
@@ -84,7 +85,9 @@ const Uploader = observer(() => {
       })
       return false
     },
-    showUploadList: false
+    
+    showUploadList: false,
+    disabled: UserStore.currentUser === null
   }
   return (
     <div>
@@ -95,7 +98,7 @@ const Uploader = observer(() => {
           </p>
           <p className="ant-upload-text">点击或者拖拽上传图片</p>
           <p className="ant-upload-hint">
-            仅支持.png/.gif/.jpg/./jpeg/.svg/.gif格式的图片，大小不能超过2M
+            仅支持图片格式，大小不能超过2M
           </p>
         </Dragger>
       </Spin>

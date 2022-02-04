@@ -1,0 +1,29 @@
+@media (max-width: 500px) {
+  header{
+    display: flex;
+    justify-content: space-around;
+    padding: 1em 0.5em 1em 0.5em !important;
+    font-size: 15px !important;
+    overflow: auto;
+  }
+
+  header a{
+    margin-left: 2em;
+  }
+
+  header  button{
+    margin-right: 1em;
+  }
+
+  main{
+    flex-grow: 1 !important;
+    padding: 80px 50px !important;
+    overflow: auto !important;
+  }
+
+  .aboutImage{
+    width: 300px;
+    height: 100px;
+    object-fit: cover;
+  }
+}

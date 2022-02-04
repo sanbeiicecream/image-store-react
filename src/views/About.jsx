@@ -8,7 +8,7 @@ function About() {
   `
   return (
       <>
-        <Image src='https://image-1307492948.cos.ap-nanjing.myqcloud.com/3%20%2815%29.jpg'/>
+        <Image className="aboutImage" src='https://image-1307492948.cos.ap-nanjing.myqcloud.com/3%20%2815%29.jpg'/>
         <article>
           <h1>项目介绍</h1>
           <p style={{fontSize:"1em"}}>前端使用React,React-Router,MobX,Ant Design完成；后端使用leancloud，腾讯云对象存储 COS完成</p>

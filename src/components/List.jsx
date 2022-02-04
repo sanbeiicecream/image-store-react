@@ -19,7 +19,14 @@ const ListComponent = observer(() => {
   const buttonClick = (event) => {
     event.stopPropagation()
     if ((event.target.nodeName === 'SPAN' && event.target.textContent === '复 制') || (event.target.childNodes[0].nodeName === 'SPAN' && event.target.childNodes[0].textContent === '复 制')) {
-      message.warning('功能未完成', 2).then()
+     const url = event.target.parentNode.parentNode.parentNode.parentNode.childNodes[0].childNodes[0].childNodes[0].childNodes[0].getAttribute('src')
+      const textArea = document.querySelector('#urlTextarea')
+      console.log(textArea)
+      textArea.value = url
+      textArea.select()
+      document.execCommand("copy");
+      // message.warning('功能未完成', 2).then()
+      message.success('复制成功').then()
     } else if ((event.target.nodeName === 'SPAN' && event.target.textContent === '删 除') || (event.target.childNodes[0].nodeName === 'SPAN' && event.target.childNodes[0].textContent === '删 除')) {
       let id = event.target.parentNode.dataset.id
       if (event.target.childNodes[0].nodeName === 'SPAN'){
@@ -57,6 +64,8 @@ const ListComponent = observer(() => {
   }, [])
   
   return (
+    <>
+      <textarea id='urlTextarea' style={{position:"absolute", top: 0, left: 0, zIndex: -1, opacity: 0}}/>
     <div onClick={buttonClick}>
       <Spin spinning={ListStore.isFinding || ListStore.isDeleting}>
         <InfiniteScroll
@@ -78,21 +87,21 @@ const ListComponent = observer(() => {
                 <List.Item.Meta
                   avatar={<Avatar src={item.attributes.url.attributes.url}
                                   style={{width: '8em', height: '8em', borderRadius: '0'}}/>}
-                  title={<div style={{maxHeight: '8em', overflow: 'auto'}}><a href={item.attributes.url.attributes.url}
+                  title={<div style={{maxHeight: '8em',paddingTop: '3em', overflow: 'auto'}}><a href={item.attributes.url.attributes.url}
                                                                               style={{
                                                                                 width: '8em',
                                                                                 wordWrap: 'break-word'
-                                                                              }}>{item.attributes.url.attributes.url}</a>
+                                                                              }}>{item.attributes.filename}</a>
                   </div>}
-                  description={item.attributes.filename}
+                  // description={item.attributes.filename}
                 />
               </List.Item>
             )}
           />
         </InfiniteScroll>
       </Spin>
-    
     </div>
+    </>
   )
 })
 

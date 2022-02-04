@@ -30,6 +30,7 @@ const StyleNavLink = styled(NavLink)`
 `
 const StyleLogin = styled.div`
   margin-left: auto;
+  //padding-right: 1em;
   > button{
     margin-left: 1em;
   }
@@ -54,7 +55,7 @@ const  Header = observer(() => {
   
   useEffect(() => {
     UserStore.pullUser()
-  },[])
+  },[UserStore])
   
   return (
     <>
