@@ -2,7 +2,7 @@ import styled from 'styled-components'
 import {Button, Form, Input, message} from 'antd'
 import {ERROECODE} from '../libs/constant'
 import {useStores} from '../stores'
-import {useHistory} from 'react-router-dom'
+import {useNavigate} from 'react-router-dom'
 
 const Wrapper = styled.div`
   max-width: 600px;
@@ -40,13 +40,13 @@ const validateUsername = (rule, value) => {
 
 function Login(){
   const {AuthStore} = useStores()
-  const history = useHistory()
+  const navigate = useNavigate()
   const onFinish = ({username, password}) => {
     AuthStore.setUsername(username)
     AuthStore.setPassword(password)
     AuthStore.login().then(() => {
       message.success('登录成功',0.5).then()
-      history.push('/')
+      navigate('/')
     }).catch((error) => {
       message.error(ERROECODE[error.code]).then()
     })

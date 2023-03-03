@@ -3,7 +3,7 @@ import imgUrl from 'components/logo.png'
 import {NavLink} from 'react-router-dom'
 import {Button} from 'antd'
 import {useStores} from '../stores'
-import {useHistory} from 'react-router-dom'
+import {useNavigate} from 'react-router-dom'
 import {observer} from 'mobx-react'
 import {useEffect} from 'react'
 
@@ -38,7 +38,7 @@ const StyleLogin = styled.div`
 
 const  Header = observer(() => {
   const {UserStore, AuthStore, ListStore, ImageStore} = useStores()
-  const history = useHistory()
+  const navigate = useNavigate()
   const handleLogout = () => {
     AuthStore.logout()
     ListStore.reset()
@@ -46,11 +46,11 @@ const  Header = observer(() => {
   }
   
   const handleLogin = () => {
-    history.push('/login')
+    navigate('/login')
   }
   
   const handleRegister = () => {
-    history.push('register')
+    navigate('register')
   }
   
   useEffect(() => {
@@ -61,7 +61,7 @@ const  Header = observer(() => {
     <>
       <StyleHeader>
         <Logo src={imgUrl} />
-        <StyleNavLink exact to="/home">首页</StyleNavLink>
+        <StyleNavLink to="/home">首页</StyleNavLink>
         <StyleNavLink to="/history">历史</StyleNavLink>
         <StyleNavLink to="/about">关于我</StyleNavLink>
         <StyleLogin>
