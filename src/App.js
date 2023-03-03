@@ -1,11 +1,11 @@
 import './App.css'
 import {Header} from './components/Header'
-import {Switch, Route} from 'react-router-dom'
+import {Route, Routes} from 'react-router-dom'
 import {lazy, Suspense} from 'react'
 import {Footer} from 'components/Footer'
 import {Loading} from './components/Loading'
 import styled from 'styled-components'
-
+import MyErrorBoundary from 'components/MyErrorBoundary';
 const Home = lazy(() => import('./views/Home').then())
 const ViewHistory = lazy(() => import('./views/ViewHistory').then())
 const About = lazy(() => import('./views/About').then())
@@ -22,16 +22,18 @@ function App() {
     <>
       <Header/>
       <Main>
-        <Suspense fallback={<Loading/>}>
-          <Switch>
-            <Route path="/" exact component={Home}/>
-            <Route path="/home" exact component={Home}/>
-            <Route path="/history" component={ViewHistory}/>
-            <Route path="/about" component={About}/>
-            <Route path="/login" component={Login}/>
-            <Route path="/register" component={Register}/>
-          </Switch>
-        </Suspense>
+        <MyErrorBoundary>
+          <Suspense fallback={<Loading/>}>
+            <Routes>
+              <Route path="/" element={< Home />}/>
+              <Route path="/home" element={<Home />}/>
+              <Route path="/history" element={<ViewHistory />}/>
+              <Route path="/about" element={<About />}/>
+              <Route path="/login" element={<Login />}/>
+              <Route path="/register" element={<Register />}/>
+            </Routes>
+          </Suspense>
+        </MyErrorBoundary>
       </Main>
       <Footer/>
     </>

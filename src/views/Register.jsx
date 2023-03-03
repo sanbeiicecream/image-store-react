@@ -3,7 +3,7 @@ import {Button, Form, Input} from 'antd'
 import {message} from 'antd'
 import {ERROECODE} from 'libs/constant'
 import {useStores} from 'stores'
-import {useHistory} from 'react-router-dom'
+import {useNavigate} from 'react-router-dom'
 
 const Wrapper = styled.div`
   max-width: 600px;
@@ -35,8 +35,9 @@ const tailLayout = {
 }
 
 const validateUsername = (rule, value) => {
+  if(!value) return Promise.resolve()
   if (/\W/.test(value)) return Promise.reject('只能是字母数字下划线')
-  if (value.length < 4 || value.length > 10) return Promise.reject('长度为4～10个字符')
+  if (value.length < 4 || value.length > 10) return Promise.reject('长度为4~10个字符')
   return Promise.resolve()
 }
 
@@ -51,12 +52,12 @@ const validateConfirm = ({getFieldValue}) => ({
 function Register() {
   const [name] = Form.useForm()
   const {AuthStore} = useStores()
-  const history = useHistory()
+  const navigate = useNavigate()
   const onFinish = ({username, password}) => {
     AuthStore.setUsername(username)
     AuthStore.setPassword(password)
     AuthStore.register().then(() => {
-      history.push('/')
+      navigate('/')
     }).catch((error) => {
       message.error(ERROECODE[error.code]).then()
       name.setFieldsValue({'username': ''})

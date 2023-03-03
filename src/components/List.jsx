@@ -87,12 +87,16 @@ const ListComponent = observer(() => {
                 <List.Item.Meta
                   avatar={<Avatar src={item.attributes.url.attributes.url}
                                   style={{width: '8em', height: '8em', borderRadius: '0'}}/>}
-                  title={<div style={{maxHeight: '8em',paddingTop: '3em', overflow: 'auto'}}><a href={item.attributes.url.attributes.url}
-                                                                              style={{
-                                                                                width: '8em',
-                                                                                wordWrap: 'break-word'
-                                                                              }}>{item.attributes.filename}</a>
-                  </div>}
+                  title={
+                    <div style={{maxHeight: '8em',paddingTop: '3em', overflow: 'auto'}}>
+                      <a href={item.attributes.url.attributes.url}
+                        style={{
+                          width: '8em',
+                          wordWrap: 'break-word'
+                        }}>
+                          {item.attributes.filename}
+                      </a>
+                    </div>}
                   // description={item.attributes.filename}
                 />
               </List.Item>
