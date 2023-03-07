@@ -53,7 +53,6 @@ const Auth = {
         .then((blob) => blob.json())
         .then((res) => {
           const tem = requestErrorHandle(res);
-          debugger
           tem.success ? resolve(tem.data) : reject(tem);
         })
         .catch(() => {
@@ -66,6 +65,24 @@ const Auth = {
 const Uploader = {
   add(file, filename) {
     return new Promise((resolve, reject) => {
+      const formData = new FormData()
+      formData.append('filename', filename)
+      formData.append('file', file)
+      fetch(api.IMAGE_UPLOAD, {
+        method: 'POST',
+        headers: {
+          // 'Content-Type': '',
+          authorization: localStorage.getItem('authorization')
+        },
+        body: formData,
+      })
+        .then((blob) => blob.json())
+        .then((json) => {
+          const tem = requestErrorHandle(json);
+          tem.success ? resolve(tem.data) : reject(tem);
+        }).catch(() => {
+          reject({ msg: '网络错误' })
+        })
     })
   },
 

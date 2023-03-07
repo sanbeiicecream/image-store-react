@@ -1,5 +1,6 @@
 import {observable, action, makeObservable} from 'mobx'
-import {Auth} from 'models'
+// import {Auth} from 'models'
+import { Auth } from 'models/index1'
 import UserStore from 'stores/user'
 
 class AuthStore {
@@ -21,9 +22,9 @@ class AuthStore {
   
   @action login(){
     return new Promise((resolve, reject) => {
-      Auth.login(this.values.username, this.values.password).then(() => {
-        UserStore.pullUser()
-        resolve()
+      Auth.login(this.values.username, this.values.password).then((res) => {
+        localStorage.setItem('authorization', res?.authorization);
+        UserStore.pullUser(resolve, reject)
       }).catch((error) => {
         reject(error)
       })
@@ -32,9 +33,9 @@ class AuthStore {
   
   @action register(){
     return new Promise((resolve, reject) => {
-      Auth.register(this.values.username, this.values.password).then(() => {
-        UserStore.pullUser()
-        resolve()
+      Auth.register(this.values.username, this.values.password).then((res) => {
+        localStorage.setItem('authorization', res?.authorization);
+        UserStore.pullUser(resolve, reject)
       }).catch((error) => {
         reject(error)
       })
@@ -42,10 +43,8 @@ class AuthStore {
   }
   
   @action logout(){
-    Auth.logout().then(() => {
-      UserStore.resetUser()
-    })
+    UserStore.resetUser()
   }
 }
-
-export default new AuthStore()
+const store = new AuthStore()
+export default store

@@ -1,7 +1,6 @@
 import styled from 'styled-components'
 import {Button, Form, Input} from 'antd'
 import {message} from 'antd'
-import {ERROECODE} from 'libs/constant'
 import {useStores} from 'stores'
 import {useNavigate} from 'react-router-dom'
 
@@ -59,7 +58,7 @@ function Register() {
     AuthStore.register().then(() => {
       navigate('/')
     }).catch((error) => {
-      message.error(ERROECODE[error.code]).then()
+      message.error(error.msg).then()
       name.setFieldsValue({'username': ''})
     })
   }

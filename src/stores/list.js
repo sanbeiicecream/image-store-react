@@ -13,7 +13,7 @@ class ListStore {
   @observable hasMore = false
   @observable deleteId = null
   @observable isDeleting = false
-  limit = 7
+  limit = 2
   
   @action find() {
     this.isFinding = true
