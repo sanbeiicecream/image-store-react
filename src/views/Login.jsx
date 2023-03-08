@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { Button, Form, Input, message } from 'antd';
 import { useStores } from '../stores/index';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate} from 'react-router-dom';
 import { useCallback, useEffect, useRef } from 'react';
 
 const Wrapper = styled.div`
@@ -41,7 +41,7 @@ const validateUsername = (rule, value) => {
 };
 
 function Login() {
-  const { AuthStore } = useStores();
+  const { AuthStore, UserStore } = useStores();
   const [form] = Form.useForm();
   const loginStatus = useRef(false);
   const navigate = useNavigate();
@@ -65,27 +65,17 @@ function Login() {
   );
 
   useEffect(() => {
-    const fn = (e) => {
-      if (e.code === 'Enter') {
-        form
-          .validateFields()
-          .then(() => {
-            !loginStatus.current && onFinish(form.getFieldValue());
-          })
-          .catch();
-      }
-    };
-
-    window.addEventListener('keydown', fn);
-    return () => {
-      window.removeEventListener('keydown', fn);
-    };
-  }, [form, onFinish]);
+    console.log('inner')
+  }, [])
 
   const onFinishFailed = () => {};
 
   return (
     <Wrapper>
+      {UserStore.currentUser && (
+        <Navigate to="/home" replace={true} />
+        )
+      }
       <Title>登录</Title>
       <Form
         {...layout}

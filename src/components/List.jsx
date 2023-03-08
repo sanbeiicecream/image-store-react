@@ -2,14 +2,28 @@ import { observer } from 'mobx-react';
 import { List, message, Avatar, Skeleton, Divider, Button, Spin } from 'antd';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useStores } from '../stores';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Modal } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
+import styled from 'styled-components';
 
 const { confirm } = Modal;
 
+const StickyDiv = styled.div`
+  display: inline-block;
+  position: sticky;
+  top: 0px;
+  left: 100%;
+  z-index: 1000;
+  margin: -20px;
+  font-size: 12px;
+  width: 1em;
+  text-align: center;
+`
+
 const ListComponent = observer(() => {
   const { ListStore, UserStore } = useStores();
+  const countRef = useRef(0);
   const loadMoreData = () => {
     ListStore.find()
       .then()
@@ -18,69 +32,56 @@ const ListComponent = observer(() => {
       });
   };
 
-  const buttonClick = (event) => {
-    event.stopPropagation();
-    if (
-      (event.target.nodeName === 'SPAN' &&
-        event.target.textContent === '复 制') ||
-      (event.target.childNodes[0].nodeName === 'SPAN' &&
-        event.target.childNodes[0].textContent === '复 制')
-    ) {
-      const url =
-        event.target.parentNode.parentNode.parentNode.parentNode.childNodes[0].childNodes[0].childNodes[0].childNodes[0].getAttribute(
-          'src'
-        );
-      const textArea = document.querySelector('#urlTextarea');
-      console.log(textArea);
-      textArea.value = url;
-      textArea.select();
-      document.execCommand('copy');
-      // message.warning('功能未完成', 2).then()
-      message.success('复制成功').then();
-    } else if (
-      (event.target.nodeName === 'SPAN' &&
-        event.target.textContent === '删 除') ||
-      (event.target.childNodes[0].nodeName === 'SPAN' &&
-        event.target.childNodes[0].textContent === '删 除')
-    ) {
-      let id = event.target.parentNode.dataset.id;
-      if (event.target.childNodes[0].nodeName === 'SPAN') {
-        id = event.target.dataset.id;
-      }
-      confirm({
-        title: '是否删除图片',
-        icon: <ExclamationCircleOutlined />,
-        content: '',
-        okText: '是',
-        okType: 'danger',
-        cancelText: '否',
-        onOk() {
-          ListStore.deleteId = id;
-          ListStore.delete()
-            .then(() => {
-              message.success('删除成功', 0.5).then();
-            })
-            .catch((error) => {
-              console.log(error);
-              message.error('删除失败', 0.5).then();
-            });
-        },
-        onCancel() {},
-      });
-    }
-  };
-
   useEffect(() => {
-    if (UserStore.currentUser && ListStore.data.length === 0) {
+    if (
+      UserStore.currentUser &&
+      ListStore.data.length === 0
+    ) {
+      countRef.current = 1;
       loadMoreData();
     }
-    return () => {
-      ListStore.reset();
-    };
+    // return () => {
+    //   ListStore.reset();
+    // };
   }, []);
+
+  const copyImage = (item) => {
+    navigator.clipboard.writeText(item.url).then(() => {
+      message.success('复制成功');
+    });
+  };
+
+  const deleteImage = (item) => {
+    confirm({
+      title: '是否删除图片',
+      icon: <ExclamationCircleOutlined />,
+      content: '',
+      okText: '是',
+      okType: 'danger',
+      cancelText: '否',
+      onOk() {
+        ListStore.deleteId = item.id;
+        ListStore.delete()
+          .then(() => {
+            message.success('删除成功', 0.5).then();
+          })
+          .catch((error) => {
+            console.log(error);
+            message.error('删除失败', 0.5).then();
+          });
+      },
+      onCancel() {},
+    });
+  };
 
   return (
     <>
+      {UserStore.currentUser && 
+      <StickyDiv> 
+        <span>共</span>
+        {ListStore.count}
+        <span>张</span>
+        </StickyDiv>}
       <textarea
         id='urlTextarea'
         style={{
@@ -91,7 +92,7 @@ const ListComponent = observer(() => {
           opacity: 0,
         }}
       />
-      <div onClick={buttonClick}>
+      <div>
         <Spin spinning={ListStore.isFinding || ListStore.isDeleting}>
           <InfiniteScroll
             dataLength={ListStore.data.length}
@@ -106,10 +107,23 @@ const ListComponent = observer(() => {
               itemLayout='horizontal'
               renderItem={(item) => (
                 <List.Item
-                  key={item.id}
+                  key={item.name}
                   actions={[
-                    <Button size='small'>复制</Button>,
-                    <Button data-id={item.id} size='small'>
+                    <Button
+                      size='small'
+                      onClick={() => {
+                        copyImage(item);
+                      }}
+                    >
+                      复制
+                    </Button>,
+                    <Button
+                      data-id={item.id}
+                      size='small'
+                      onClick={() => {
+                        deleteImage(item);
+                      }}
+                    >
                       删除
                     </Button>,
                   ]}
@@ -117,7 +131,7 @@ const ListComponent = observer(() => {
                   <List.Item.Meta
                     avatar={
                       <Avatar
-                        src={item.attributes.url.attributes.url}
+                        src={item.url}
                         style={{
                           width: '8em',
                           height: '8em',
@@ -134,13 +148,13 @@ const ListComponent = observer(() => {
                         }}
                       >
                         <a
-                          href={item.attributes.url.attributes.url}
+                          href={item.url}
                           style={{
                             width: '8em',
                             wordWrap: 'break-word',
                           }}
                         >
-                          {item.attributes.filename}
+                          {item.name}
                         </a>
                       </div>
                     }

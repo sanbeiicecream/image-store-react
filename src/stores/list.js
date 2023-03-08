@@ -1,5 +1,5 @@
-import {action, makeObservable, observable, runInAction} from 'mobx'
-import {Uploader} from '../models'
+import {action,makeObservable, observable, runInAction} from 'mobx'
+import {Uploader} from '../models/index1'
 
 
 class ListStore {
@@ -13,15 +13,17 @@ class ListStore {
   @observable hasMore = false
   @observable deleteId = null
   @observable isDeleting = false
-  limit = 2
-  
+  @observable count = 0
+  limit = 5
+
   @action find() {
     this.isFinding = true
     return new Promise((resolve, reject) => {
-      Uploader.find({page: this.page, limit: this.limit}).then((list) => {
+      Uploader.find({page: this.page + 1, limit: Number(this.limit)}).then((res) => {
         runInAction(() => {
-          this.hasMore = list.length > 9
-          this.data = this.data.concat(list)
+          this.count = res.count
+          this.data = this.data.concat(res.images)
+          this.hasMore = this.data.length < res?.count
           this.page = this.page + 1
         })
       }).catch((error) => {
@@ -38,7 +40,7 @@ class ListStore {
     const index = this.data.findIndex(item => item.id === this.deleteId)
     this.isDeleting = true
     return new Promise((resolve, reject) => {
-      Uploader.delete({id: this.deleteId, filename: this.data[index].attributes.filename}).then(() => {
+      Uploader.delete({id: this.deleteId}).then(() => {
         runInAction(() => {
           this.data.splice(index, 1)
         })

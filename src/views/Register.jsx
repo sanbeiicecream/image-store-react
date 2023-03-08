@@ -2,7 +2,7 @@ import styled from 'styled-components'
 import {Button, Form, Input} from 'antd'
 import {message} from 'antd'
 import {useStores} from 'stores'
-import {useNavigate} from 'react-router-dom'
+import {useNavigate, Navigate} from 'react-router-dom'
 
 const Wrapper = styled.div`
   max-width: 600px;
@@ -50,7 +50,7 @@ const validateConfirm = ({getFieldValue}) => ({
 
 function Register() {
   const [name] = Form.useForm()
-  const {AuthStore} = useStores()
+  const {AuthStore, UserStore} = useStores()
   const navigate = useNavigate()
   const onFinish = ({username, password}) => {
     AuthStore.setUsername(username)
@@ -67,6 +67,10 @@ function Register() {
   }
   return (
     <Wrapper>
+      {UserStore.currentUser && (
+        <Navigate to="/home" replace={true} />
+        )
+      }
       <Title>注册</Title>
       <Form
         {...layout}

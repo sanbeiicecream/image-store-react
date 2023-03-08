@@ -16,14 +16,14 @@ const Register = lazy(() => import('./views/Register').then())
 
 const Main = styled.div`
   flex-grow: 1;
-  padding: 5vh;
+  padding: 20px;
   overflow: auto;
 `
 function App() {
   return (
     <>
       <Header/>
-      <Main>
+      <Main id="scrollableDiv">
         <MyErrorBoundary>
             <Routes>
               <Route path="/" element={<Navigate replace to="/home" />} />
@@ -42,11 +42,14 @@ function App() {
                   <About />
                 </Suspense>
               }/>
-              <Route path="/login" element={
-                <Suspense fallback={<Loading/>}>
-                  <Login />
-                </Suspense>
-              }/>
+              <Route path="/login" 
+                element={
+                  <Suspense fallback={<Loading/>}>
+                    <Login />
+                  </Suspense>
+                }
+                loader={() => {}}
+              />
               <Route path="/register" element={
                 <Suspense fallback={<Loading/>}>
                   <Register />

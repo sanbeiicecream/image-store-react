@@ -86,21 +86,41 @@ const Uploader = {
     })
   },
 
-  find() {
+  find({page,limit}) {
     return new Promise((resolve, reject) => {
-    })
-  },
-
-  delete({ id, filename }) {
-    return new Promise((resolve, reject) => {
-      this.queryCount({ name: filename }).then((count) => {
-      }).catch((error) => {
-        reject(error)
+      fetch(api.IMAGE_Find,{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          authorization: localStorage.getItem('authorization'),
+        },
+        body:  `page=${page}&size=${limit}`
+      }).then(blob => blob.json()).then(json => {
+        const tem = requestErrorHandle(json)
+        tem.success ? resolve(tem.data) : reject(tem);
+      }).catch(() => {
+        reject({msg: '网络错误'})
       })
     })
   },
-  queryCount({ name }) {
-  }
+
+  delete({ id }) {
+    return new Promise((resolve, reject) => {
+      fetch(api.IMAGE_REMOVE,{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          authorization: localStorage.getItem('authorization'),
+        },
+        body:  `id=${id}`
+      }).then(blob => blob.json()).then(json => {
+        const tem = requestErrorHandle(json)
+        tem.success ? resolve(tem.data) : reject(tem);
+      }).catch(() => {
+        reject({msg: '网络错误'})
+      })
+    })
+  },
 }
 
 

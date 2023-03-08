@@ -4,7 +4,7 @@ const StyleFooter = styled.footer`
   text-align: center;
   font-size: 0.8rem;
   color: #aaa;
-  padding: 1em 10em;
+  /* padding: 1em 10em; */
 `
 function Footer(){
   return(

@@ -1,10 +1,11 @@
-@media (max-width: 500px) {
+@media (max-width: 550px) {
   header{
     display: flex;
     justify-content: space-around;
     padding: 1em 0.5em 1em 0.5em !important;
     font-size: 15px !important;
     overflow: auto;
+    /* padding:  0 !important; */
   }
 
   header a{

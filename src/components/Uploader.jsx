@@ -1,9 +1,9 @@
 import { observer, useLocalObservable } from 'mobx-react';
-import { Upload, message, Spin, Button } from 'antd';
+import { Upload, message, Spin } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import { useStores } from '../stores/index';
 import styled from 'styled-components';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 const { Dragger } = Upload;
 const Result = styled.div`
