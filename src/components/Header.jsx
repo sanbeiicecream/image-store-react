@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import imgUrl from 'components/logo.png';
+import imgUrl from '../assets/pic/logo.png';
 import { NavLink } from 'react-router-dom';
 import { Button, message } from 'antd';
 import { useStores } from '../stores/index';
@@ -16,9 +16,35 @@ const StyleHeader = styled.header`
   font-size: 1rem;
   display: flex;
   width: 100%;
-  padding: 1em 5em;
+  padding: 1em 2em;
   align-items: center;
   color: #fff;
+
+  @media (max-width: 550px) {
+    display: flex;
+    justify-content: space-around;
+    padding: 1em 0.5em 1em 0.5em !important;
+    font-size: 15px !important;
+    a {
+      margin-left: 2em;
+    }
+    button {
+      margin-right: 0.5em;
+    }
+  }
+  @media (max-width: 380px) {
+    display: flex;
+    justify-content: space-between;
+    padding: 1em 0.5em 1em 0.5em !important;
+    font-size: 15px !important;
+    a {
+      margin-left: 1em;
+    }
+    button {
+      margin-right: 0.5em;
+      font-size: 0.8em;
+    }
+  }
 `;
 const StyleNavLink = styled(NavLink)`
   color: #fff;
@@ -56,7 +82,8 @@ const Header = observer(() => {
   useEffect(() => {
     if (
       !localStorage.getItem('authorization') ||
-      !localStorage.getItem('authorization') === 'undefined'
+      localStorage.getItem('authorization') === 'undefined' ||
+      UserStore.currentUser
     ) {
       return;
     }
@@ -68,16 +95,10 @@ const Header = observer(() => {
           window.location.hash?.includes('login')
         ) {
           navigate('/home');
-        } else if (window.location.hash?.includes?.('history')) {
-          ListStore.find()
-            .then()
-            .catch(() => {
-              message.error('获取失败', 2);
-            });
         }
       })
-      .catch((res) => message.error(res.msg));
-  }, []);
+      .catch(res => message.error(res.msg));
+  }, [ListStore, UserStore, navigate]);
 
   return (
     <>

@@ -4,6 +4,7 @@ import { InboxOutlined } from '@ant-design/icons';
 import { useStores } from '../stores/index';
 import styled from 'styled-components';
 import { useEffect, useRef } from 'react';
+import { judgeFileType } from 'utils/tool';
 
 const { Dragger } = Upload;
 const Result = styled.div`
@@ -23,54 +24,44 @@ const Uploader = observer(() => {
   const ref2 = useRef();
   const store = useLocalObservable(() => ({
     width: null,
+    height: null,
     setWidth(width) {
-      store.width = width;
+      this.width = width;
+    },
+    setHeight(height) {
+      this.height = height;
     },
     get widthStr() {
-      return store.width ? `/thumbnail/${store.width}x` : '';
-    },
-    height: null,
-    setHeight(height) {
-      store.height = height;
+      return `width=${this.width || ''}`;
     },
     get heightStr() {
-      return store.height ? `/thumbnail/x${store.height}` : '';
+      return `height=${this.height || ''}`;
     },
     get fullStr() {
-      return (
-        ImageStore.serverFile +
-        '?imageMogr2/' +
-        store.heightStr +
-        store.widthStr
-      );
+      if (this.widthStr || this.heightStr) {
+        return `${ImageStore.serverFile}?${this.widthStr}&${this.heightStr}`;
+      }
+      return ImageStore.serverFile;
     },
   }));
-  const { UserStore, ImageStore } = useStores();
+  const { UserStore, ImageStore, ListStore } = useStores();
 
   useEffect(() => {
     return () => {
       ImageStore.reset();
     };
-  }, []);
-
-  // useEffect(() => {
-  //   if(msg){
-  //     console.log("🚀 ~ file: Uploader.jsx:60 ~ useEffect ~ msg:", msg)
-  //     messageApi.info(msg, 2)
-  //     console.log("🚀 ~ file: Uploader.jsx:60 ~ useEffect ~ msg:", 'hhhhhhhh')
-  //   }
-  // }, [msg])
+  }, [ImageStore]);
 
   const bindWidthChange = () => {
-    store.setWidth(ref1.current);
+    store.setWidth(ref1.current.value);
   };
 
   const bindHeightChange = () => {
-    store.setHeight(ref2.current);
+    store.setHeight(ref2.current.value);
   };
 
   const props = {
-    beforeUpload: (file) => {
+    beforeUpload: async file => {
       if (UserStore.currentUser === null) {
         message.warning('请先登录再上传！');
         return false;
@@ -78,33 +69,28 @@ const Uploader = observer(() => {
       if (file.length > 0) {
         return false;
       }
-      if (!/(svg$)|(png$)|(jpg$)|(jpeg$)|(gif$)/gi.test(file.type)) {
-        message.error('只能上传png/svg/jpg/gif格式的文件', 2);
-        return false;
-      }
-
       if (file.size > 1024 * 1024 * 5) {
-        // message.destroy();
-        message.error('图片最大5M', 2);
-        // setMsg('图片最大5M')
-        console.log(
-          '🚀 ~ file: Uploader.jsx:82 ~ Uploader ~ message.error:',
-          message.error
-        );
+        message.error('最大上传大小5M', 2);
         return false;
       }
-
+      if (!(await judgeFileType(file))) {
+        message.error('只能上传图片格式的文件', 2);
+        return false;
+      }
       ImageStore.setFile(file);
       ImageStore.setFilename(file.name);
       ImageStore.upload()
-        .then(() => {})
-        .catch((error) => {
+        .then(() => {
+          message.success('上传成功');
+          ListStore.reset();
+        })
+        .catch(error => {
           console.log(error);
           message.error(error.msg, 2);
         });
       return false;
     },
-
+    accept: 'image/*',
     showUploadList: false,
     disabled: UserStore.currentUser === null,
   };
@@ -117,7 +103,7 @@ const Uploader = observer(() => {
             <InboxOutlined />
           </p>
           <p className='ant-upload-text'>点击或者拖拽上传图片</p>
-          <p className='ant-upload-hint'>仅支持图片格式，大小不能超过2M</p>
+          <p className='ant-upload-hint'>仅支持图片格式，大小不能超过5M</p>
         </Dragger>
         {/* {msg} */}
       </Spin>
@@ -135,7 +121,7 @@ const Uploader = observer(() => {
             <dd>{ImageStore.filename}</dd>
             <dt>图片预览</dt>
             <dd>
-              <Image src={ImageStore.serverFile} />
+              <Image src={`${ImageStore.serverFile}?width=300`} />
             </dd>
             <dt>更多尺寸</dt>
             <dd>

@@ -1,6 +1,6 @@
 import {observable, action, makeObservable} from 'mobx'
 // import {Auth} from 'models'
-import { Auth } from 'models/index1'
+import { Auth } from 'models'
 import UserStore from 'stores/user'
 
 class AuthStore {

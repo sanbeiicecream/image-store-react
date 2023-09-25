@@ -1,5 +1,5 @@
 import { action, makeObservable, observable, runInAction } from 'mobx';
-import { Auth } from 'models/index1';
+import { Auth } from 'models';
 
 class UserStore {
   constructor() {

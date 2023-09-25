@@ -2,7 +2,7 @@ import { observer } from 'mobx-react';
 import { List, message, Avatar, Skeleton, Divider, Button, Spin } from 'antd';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useStores } from '../stores';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect } from 'react';
 import { Modal } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
@@ -19,39 +19,36 @@ const StickyDiv = styled.div`
   font-size: 12px;
   width: 1em;
   text-align: center;
-`
+`;
 
 const ListComponent = observer(() => {
   const { ListStore, UserStore } = useStores();
-  const countRef = useRef(0);
-  const loadMoreData = () => {
+  const loadMoreData = useCallback(() => {
     ListStore.find()
       .then()
-      .catch((error) => {
-        message.error('获取失败', 2).then();
+      .catch(error => {
+        message.error('获取失败', 2).then(() => {
+          UserStore.resetUser();
+        });
       });
-  };
+  }, [ListStore, UserStore]);
 
   useEffect(() => {
-    if (
-      UserStore.currentUser &&
-      ListStore.data.length === 0
-    ) {
-      countRef.current = 1;
+    if (UserStore.currentUser && ListStore.data.length === 0) {
       loadMoreData();
     }
     // return () => {
     //   ListStore.reset();
     // };
-  }, []);
+  }, [ListStore.data.length, UserStore.currentUser, loadMoreData]);
 
-  const copyImage = (item) => {
+  const copyImage = item => {
     navigator.clipboard.writeText(item.url).then(() => {
       message.success('复制成功');
     });
   };
 
-  const deleteImage = (item) => {
+  const deleteImage = item => {
     confirm({
       title: '是否删除图片',
       icon: <ExclamationCircleOutlined />,
@@ -59,13 +56,14 @@ const ListComponent = observer(() => {
       okText: '是',
       okType: 'danger',
       cancelText: '否',
+      centered: true,
       onOk() {
         ListStore.deleteId = item.id;
         ListStore.delete()
           .then(() => {
             message.success('删除成功', 0.5).then();
           })
-          .catch((error) => {
+          .catch(error => {
             console.log(error);
             message.error('删除失败', 0.5).then();
           });
@@ -76,12 +74,13 @@ const ListComponent = observer(() => {
 
   return (
     <>
-      {UserStore.currentUser && 
-      <StickyDiv> 
-        <span>共</span>
-        {ListStore.count}
-        <span>张</span>
-        </StickyDiv>}
+      {UserStore.currentUser && (
+        <StickyDiv>
+          <span>共</span>
+          {ListStore.count}
+          <span>张</span>
+        </StickyDiv>
+      )}
       <textarea
         id='urlTextarea'
         style={{
@@ -99,13 +98,15 @@ const ListComponent = observer(() => {
             next={loadMoreData}
             hasMore={ListStore.hasMore}
             loader={<Skeleton avatar paragraph={{ rows: 1 }} active />}
-            endMessage={<Divider plain>~到底了~</Divider>}
+            endMessage={
+              ListStore.isFinding && <Divider plain>~到底了~</Divider>
+            }
             scrollableTarget='scrollableDiv'
           >
             <List
               dataSource={ListStore.data}
               itemLayout='horizontal'
-              renderItem={(item) => (
+              renderItem={item => (
                 <List.Item
                   key={item.name}
                   actions={[
@@ -131,32 +132,24 @@ const ListComponent = observer(() => {
                   <List.Item.Meta
                     avatar={
                       <Avatar
-                        src={item.url}
+                        src={`${item.url}?width=${12 * 16}`}
                         style={{
-                          width: '8em',
+                          width: '12em',
                           height: '8em',
                           borderRadius: '0',
                         }}
                       />
                     }
                     title={
-                      <div
+                      <a
+                        href={item.url}
                         style={{
-                          maxHeight: '8em',
-                          paddingTop: '3em',
-                          overflow: 'auto',
+                          width: '8em',
+                          // wordWrap: 'break-word',
                         }}
                       >
-                        <a
-                          href={item.url}
-                          style={{
-                            width: '8em',
-                            wordWrap: 'break-word',
-                          }}
-                        >
-                          {item.name}
-                        </a>
-                      </div>
+                        {item.name}
+                      </a>
                     }
                     // description={item.attributes.filename}
                   />

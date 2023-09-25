@@ -1,5 +1,6 @@
+/* eslint-disable import/no-anonymous-default-export */
 import {action,makeObservable, observable, runInAction} from 'mobx'
-import {Uploader} from '../models/index1'
+import {Uploader} from '../models'
 
 
 class ListStore {
@@ -35,7 +36,7 @@ class ListStore {
       })
     })
   }
-  
+
   @action delete() {
     const index = this.data.findIndex(item => item.id === this.deleteId)
     this.isDeleting = true
@@ -43,6 +44,7 @@ class ListStore {
       Uploader.delete({id: this.deleteId}).then(() => {
         runInAction(() => {
           this.data.splice(index, 1)
+          this.count -= 1
         })
         resolve()
       }).catch((error) => {
