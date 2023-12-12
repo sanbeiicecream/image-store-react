@@ -60,6 +60,15 @@ const StyleLogin = styled.div`
   > button {
     margin-left: 1em;
   }
+  @media (max-width: 450px) {
+    display: flex;
+    > button {
+      margin: 0;
+      &:nth-child(2) {
+        margin-left: 0.5em;
+      }
+    }
+  }
 `;
 
 const Header = observer(() => {

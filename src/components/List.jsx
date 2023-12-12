@@ -37,15 +37,29 @@ const ListComponent = observer(() => {
     if (UserStore.currentUser && ListStore.data.length === 0) {
       loadMoreData();
     }
-    // return () => {
-    //   ListStore.reset();
-    // };
   }, [ListStore.data.length, UserStore.currentUser, loadMoreData]);
 
-  const copyImage = item => {
-    navigator.clipboard.writeText(item.url).then(() => {
-      message.success('复制成功');
-    });
+  const copyImageURL = item => {
+    if (navigator.clipboard) {
+      navigator.clipboard
+        .writeText(item.url)
+        .then(() => {
+          message.success('复制成功');
+        })
+        .catch(e => {
+          message.warning('复制失败');
+        });
+    } else {
+      const textarea = document.querySelector('#urlTextarea');
+      textarea.value = item.url;
+      textarea?.select();
+      if (document?.execCommand('copy')) {
+        message.success('复制成功');
+      } else {
+        message.warning('复制失败');
+      }
+      textarea.value = '';
+    }
   };
 
   const deleteImage = item => {
@@ -89,6 +103,8 @@ const ListComponent = observer(() => {
           left: 0,
           zIndex: -1,
           opacity: 0,
+          width: 0,
+          height: 0,
         }}
       />
       <div>
@@ -113,7 +129,7 @@ const ListComponent = observer(() => {
                     <Button
                       size='small'
                       onClick={() => {
-                        copyImage(item);
+                        copyImageURL(item);
                       }}
                     >
                       复制
@@ -145,13 +161,11 @@ const ListComponent = observer(() => {
                         href={item.url}
                         style={{
                           width: '8em',
-                          // wordWrap: 'break-word',
                         }}
                       >
                         {item.name}
                       </a>
                     }
-                    // description={item.attributes.filename}
                   />
                 </List.Item>
               )}
