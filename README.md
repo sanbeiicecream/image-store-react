@@ -1,4 +1,4 @@
-图床应用：React + React-Router + Mobx + AntD
+图床应用：Vite + React + React-Router + Jotai + AntD + StyleX
 
 ## 环境变量
 REACT_APP_BASE_URL -> 接口请求路径
