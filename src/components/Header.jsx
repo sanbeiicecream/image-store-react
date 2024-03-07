@@ -12,6 +12,7 @@ const Logo = styled.img`
   vertical-align: middle;
 `;
 const StyleHeader = styled.header`
+  height: 6vh;
   background-color: #02101f;
   font-size: 1rem;
   display: flex;

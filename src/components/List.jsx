@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react';
-import { List, message, Avatar, Skeleton, Divider, Button, Spin } from 'antd';
+import { List, message, Image, Skeleton, Divider, Button, Spin } from 'antd';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useStores } from '../stores';
 import { useCallback, useEffect } from 'react';
@@ -26,7 +26,7 @@ const ListComponent = observer(() => {
   const loadMoreData = useCallback(() => {
     ListStore.find()
       .then()
-      .catch(error => {
+      .catch(() => {
         message.error('获取失败', 2).then(() => {
           UserStore.resetUser();
         });
@@ -46,7 +46,7 @@ const ListComponent = observer(() => {
         .then(() => {
           message.success('复制成功');
         })
-        .catch(e => {
+        .catch(() => {
           message.warning('复制失败');
         });
     } else {
@@ -84,6 +84,10 @@ const ListComponent = observer(() => {
       },
       onCancel() {},
     });
+  };
+
+  const editImage = () => {
+    message.info('开发中...');
   };
 
   return (
@@ -131,6 +135,7 @@ const ListComponent = observer(() => {
                       onClick={() => {
                         copyImageURL(item);
                       }}
+                      key={item.id}
                     >
                       复制
                     </Button>,
@@ -140,32 +145,37 @@ const ListComponent = observer(() => {
                       onClick={() => {
                         deleteImage(item);
                       }}
+                      key={item.id}
                     >
                       删除
+                    </Button>,
+                    <Button
+                      data-id={item.id}
+                      size='small'
+                      onClick={() => {
+                        editImage(item);
+                      }}
+                      key={item.id}
+                    >
+                      编辑
                     </Button>,
                   ]}
                 >
                   <List.Item.Meta
                     avatar={
-                      <Avatar
+                      <Image
                         src={`${item.url}?width=${12 * 16}`}
                         style={{
                           width: '12em',
                           height: '8em',
                           borderRadius: '0',
                         }}
+                        preview={{
+                          src: item.url,
+                        }}
                       />
                     }
-                    title={
-                      <a
-                        href={item.url}
-                        style={{
-                          width: '8em',
-                        }}
-                      >
-                        {item.name}
-                      </a>
-                    }
+                    title={<span>{item.name}</span>}
                   />
                 </List.Item>
               )}

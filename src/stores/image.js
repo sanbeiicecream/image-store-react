@@ -1,4 +1,3 @@
-/* eslint-disable import/no-anonymous-default-export */
 import { action, makeObservable, observable, runInAction } from 'mobx';
 // import {Uploader} from '../models/index'
 import { Uploader } from '../models';

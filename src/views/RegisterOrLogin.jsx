@@ -1,10 +1,10 @@
 import styled from 'styled-components';
 import { Button, Form, Input } from 'antd';
 import { message } from 'antd';
-import { useStores } from 'stores';
+import { useStores } from '@/stores';
 import { useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { useCallback, useEffect, useRef } from 'react';
-import { isMobileDevice } from 'utils/tool';
+import { isMobileDevice } from '@/utils/tool';
 
 const Wrapper = styled.div`
   max-width: 600px;

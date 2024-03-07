@@ -5,6 +5,7 @@ const Image = styled.img`
   opacity: 0.8;
   background-size: cover;
 `;
+
 function About() {
   return (
     <>
@@ -17,7 +18,7 @@ function About() {
       <article>
         <h1>项目介绍</h1>
         <p style={{ fontSize: '1em' }}>
-          前端使用React Hooks、React-Router、MobX、Ant Design完成
+          前端使用Vite、React、React-Router、Jotai、Ant Design、StyleX完成
           <br />
           后端使用EggJS、MariaDB、开源分布式对象存储minio、imgproxy完成
         </p>

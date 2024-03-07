@@ -1,10 +1,12 @@
 import { observer, useLocalObservable } from 'mobx-react';
-import { Upload, message, Spin } from 'antd';
+import { Upload, message, Image } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import { useStores } from '../stores/index';
 import styled from 'styled-components';
 import { useEffect, useRef } from 'react';
-import { judgeFileType } from 'utils/tool';
+import { judgeFileType } from '@/utils/tool';
+import { useAtom } from 'jotai';
+import { globalStateAtom } from '@/main.jsx';
 
 const { Dragger } = Upload;
 const Result = styled.div`
@@ -16,10 +18,9 @@ const H1 = styled.h1`
   margin: 20px 0;
   text-align: center;
 `;
-const Image = styled.img`
-  max-width: 300px;
-`;
+
 const Uploader = observer(() => {
+  const [globalState, setGlobalState] = useAtom(globalStateAtom);
   const ref1 = useRef();
   const ref2 = useRef();
   const store = useLocalObservable(() => ({
@@ -48,7 +49,7 @@ const Uploader = observer(() => {
 
   useEffect(() => {
     return () => {
-      ImageStore.reset();
+      // ImageStore.reset();
     };
   }, [ImageStore]);
 
@@ -79,6 +80,7 @@ const Uploader = observer(() => {
       }
       ImageStore.setFile(file);
       ImageStore.setFilename(file.name);
+      setGlobalState({ ...globalState, loading: true });
       ImageStore.upload()
         .then(() => {
           message.success('上传成功');
@@ -87,6 +89,9 @@ const Uploader = observer(() => {
         .catch(error => {
           console.log(error);
           message.error(error.msg, 2);
+        })
+        .finally(() => {
+          setGlobalState({ ...globalState, spinning: false });
         });
       return false;
     },
@@ -97,16 +102,14 @@ const Uploader = observer(() => {
 
   return (
     <div>
-      <Spin spinning={ImageStore.isUploading}>
-        <Dragger {...props}>
-          <p className='ant-upload-drag-icon'>
-            <InboxOutlined />
-          </p>
-          <p className='ant-upload-text'>点击或者拖拽上传图片</p>
-          <p className='ant-upload-hint'>仅支持图片格式，大小不能超过5M</p>
-        </Dragger>
-        {/* {msg} */}
-      </Spin>
+      <Dragger {...props}>
+        <p className='ant-upload-drag-icon'>
+          <InboxOutlined />
+        </p>
+        <p className='ant-upload-text'>点击或者拖拽上传图片</p>
+        <p className='ant-upload-hint'>仅支持图片格式，大小不能超过5M</p>
+      </Dragger>
+      {/* {msg} */}
       {ImageStore.serverFile ? (
         <Result>
           <H1>上传结果</H1>
@@ -121,7 +124,10 @@ const Uploader = observer(() => {
             <dd>{ImageStore.filename}</dd>
             <dt>图片预览</dt>
             <dd>
-              <Image src={`${ImageStore.serverFile}?width=300`} />
+              <Image
+                src={`${ImageStore.serverFile}?width=300`}
+                preview={{ src: store.fullStr }}
+              />
             </dd>
             <dt>更多尺寸</dt>
             <dd>
