@@ -1,12 +1,15 @@
 import './App.css';
-import { Header } from './components/Header';
+import { Header } from './components/Header.jsx';
 import { Route, Routes, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
-import { Footer } from 'components/Footer';
-import { Loading } from './components/Loading';
+import { Footer } from './components/Footer.jsx';
+import { Loading } from './components/Loading.jsx';
 import styled from 'styled-components';
-import MyErrorBoundary from 'components/MyErrorBoundary';
+import MyErrorBoundary from './components/MyErrorBoundary.jsx';
 import 'antd/dist/reset.css';
+import { Spin } from 'antd';
+import { useAtom } from 'jotai';
+import { globalStateAtom } from '@/main';
 
 const Home = lazy(() => import('./views/Home').then());
 const ViewHistory = lazy(() => import('./views/ViewHistory').then());
@@ -14,13 +17,15 @@ const About = lazy(() => import('./views/About').then());
 const RegisterOrLogin = lazy(() => import('./views/RegisterOrLogin').then());
 
 const Main = styled.div`
+  height: calc(100vh - 6vh - 4vh);
   flex-grow: 1;
-  padding: 20px;
   overflow: auto;
+  padding: 20px 20px 0 20px;
 `;
 function App() {
+  const [globalState] = useAtom(globalStateAtom);
   return (
-    <>
+    <Spin spinning={globalState.loading} tip='上传中'>
       <Header />
       <Main id='scrollableDiv'>
         <MyErrorBoundary>
@@ -71,7 +76,7 @@ function App() {
         </MyErrorBoundary>
       </Main>
       <Footer />
-    </>
+    </Spin>
   );
 }
 

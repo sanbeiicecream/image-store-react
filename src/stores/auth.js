@@ -1,7 +1,6 @@
-import {observable, action, makeObservable} from 'mobx'
-// import {Auth} from 'models'
-import { Auth } from 'models'
-import UserStore from 'stores/user'
+import { observable, action, makeObservable } from 'mobx'
+import { Auth } from '@/models'
+import UserStore from '@/stores/user'
 
 class AuthStore {
   constructor() {
@@ -11,16 +10,16 @@ class AuthStore {
     username: '',
     password: ''
   }
-  
-  @action setUsername(username){
+
+  @action setUsername(username) {
     this.values.username = username;
   }
-  
-  @action setPassword(password){
+
+  @action setPassword(password) {
     this.values.password = password;
   }
-  
-  @action login(){
+
+  @action login() {
     return new Promise((resolve, reject) => {
       Auth.login(this.values.username, this.values.password).then((res) => {
         localStorage.setItem('authorization', res?.authorization);
@@ -30,8 +29,8 @@ class AuthStore {
       })
     })
   }
-  
-  @action register(){
+
+  @action register() {
     return new Promise((resolve, reject) => {
       Auth.register(this.values.username, this.values.password).then((res) => {
         localStorage.setItem('authorization', res?.authorization);
@@ -41,8 +40,8 @@ class AuthStore {
       })
     })
   }
-  
-  @action logout(){
+
+  @action logout() {
     UserStore.resetUser()
   }
 }

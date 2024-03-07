@@ -1,5 +1,5 @@
 import { action, makeObservable, observable, runInAction } from 'mobx';
-import { Auth } from 'models';
+import { Auth } from '@/models';
 
 class UserStore {
   constructor() {
@@ -21,7 +21,7 @@ class UserStore {
       });
   }
 
-  @action initalUser(){
+  @action initalUser() {
     return new Promise((resolve, reject) => {
       this.pullUser(resolve, reject)
     })
