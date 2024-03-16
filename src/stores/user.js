@@ -1,36 +1,23 @@
-import { action, makeObservable, observable, runInAction } from 'mobx';
 import { Auth } from '@/models';
 
-class UserStore {
-  constructor() {
-    makeObservable(this);
-  }
-  @observable currentUser = null;
 
-  @action pullUser(resolve, reject) {
-    Auth.getCurrentUser()
-      .then((res) => {
-        runInAction(() => {
-          this.currentUser = res;
-        });
-        resolve()
-      })
-      .catch((res) => {
-        reject(res);
-        this.resetUser();
-      });
-  }
-
-  @action initalUser() {
-    return new Promise((resolve, reject) => {
-      this.pullUser(resolve, reject)
-    })
-  }
-
-  @action resetUser() {
-    this.currentUser = null;
+export const userStore = (set, get) => ({
+  currentUser: null,
+  initalUser: async () => {
+    return await get().pullUser()
+  },
+  pullUser: async () => {
+    try {
+      const res = await Auth.getCurrentUser()
+      set({ currentUser: res })
+      return { success: true }
+    } catch (e) {
+      get().resetUser();
+      return { success: false }
+    }
+  },
+  resetUser: () => {
+    set({ currentUser: null })
     localStorage.removeItem('authorization');
-  }
-}
-const store = new UserStore();
-export default store;
+  },
+})

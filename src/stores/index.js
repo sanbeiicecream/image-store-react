@@ -1,14 +1,21 @@
-import AuthStore from '@/stores/auth'
-import UserStore from '@/stores/user'
-import ImageStore from '@/stores/image'
-import ListStore from '@/stores/list'
-import { createContext, useContext } from 'react'
+import { authStore } from '@/stores/auth'
+import { userStore } from '@/stores/user'
+import { imageStore } from '@/stores/image'
+import { listStore } from '@/stores/list'
+import { create } from 'zustand'
 
-const storesContext = createContext({
-  AuthStore,
-  UserStore,
-  ImageStore,
-  ListStore
+
+const loadingStore = set => ({
+  loading: false,
+  setLoading: loading => set({ loading })
 })
 
-export const useStores = () => useContext(storesContext)
+export const useStore = create((...a) => ({
+  ...loadingStore(...a),
+  ...authStore(...a),
+  ...userStore(...a),
+  ...imageStore(...a),
+  ...listStore(...a)
+}))
+
+

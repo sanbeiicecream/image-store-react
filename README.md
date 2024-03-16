@@ -1,7 +1,7 @@
-图床应用：Vite + React + React-Router + Jotai + AntD + StyleX
+图床应用：Vite + React + React-Router + Zustand + AntD + StyleX
 
 ## 环境变量
-REACT_APP_BASE_URL -> 接口请求路径
+VITE_URL -> 接口请求路径
 
 ## 接口
 |          | 接口               | 方法 |
@@ -16,5 +16,6 @@ REACT_APP_BASE_URL -> 接口请求路径
 
 ## TODO
 
+- [ ] 编辑功能
 - [ ] 断点续传
 - [ ] 样式优化

@@ -1,69 +1,43 @@
-/* eslint-disable import/no-anonymous-default-export */
-import { action, makeObservable, observable, runInAction } from 'mobx'
-import { Uploader } from '../models'
+import { Uploader } from '@/models'
 
 
-class ListStore {
-  constructor() {
-    makeObservable(this)
-  }
-
-  @observable data = []
-  @observable isFinding = false
-  @observable page = 0
-  @observable hasMore = false
-  @observable deleteId = null
-  @observable isDeleting = false
-  @observable count = 0
-  limit = 5
-
-  @action find() {
-    this.isFinding = true
-    return new Promise((resolve, reject) => {
-      Uploader.find({ page: this.page + 1, limit: Number(this.limit) }).then((res) => {
-        runInAction(() => {
-          this.count = res.count
-          this.data = this.data.concat(res.images)
-          this.hasMore = this.data.length < res?.count
-          this.page = this.page + 1
-        })
-      }).catch((error) => {
-        reject(error)
-      }).finally(() => {
-        runInAction(() => {
-          this.isFinding = false
-        })
+export const listStore = (set, get) => ({
+  listData: [],
+  page: 0,
+  listHasMore: false,
+  listIsDeleting: false,
+  listIsFinding: false,
+  listCount: 0,
+  findList: async () => {
+    set({ listIsFinding: true })
+    const res = await Uploader.find({ page: get().page + 1, limit: 5 })
+    if (res.success) {
+      set({
+        listCount: res.data?.count,
+        listData: get().listData.concat(res.data?.images),
+        listHasMore: res.data?.images?.length + get().listData?.length < res.data?.count,
+        page: get().page + 1
       })
+    }
+    set({ listIsFinding: false })
+  },
+  deleteListItem: async id => {
+    const index = get().listData.findIndex(item => item.id === id)
+    set({ listIsDeleting: true })
+    const res = await Uploader.delete({ id })
+    get().listData.splice(index, 1)
+    if (res.success) {
+      set({ listData: get().listData, count: get().count-- })
+    }
+    set({ listIsDeleting: false })
+    return res
+  },
+  resetList: () => {
+    set({
+      listData: [],
+      page: 0,
+      listHasMore: false,
+      listIsDeleting: false
     })
   }
-
-  @action delete() {
-    const index = this.data.findIndex(item => item.id === this.deleteId)
-    this.isDeleting = true
-    return new Promise((resolve, reject) => {
-      Uploader.delete({ id: this.deleteId }).then(() => {
-        runInAction(() => {
-          this.data.splice(index, 1)
-          this.count -= 1
-        })
-        resolve()
-      }).catch((error) => {
-        reject(error)
-      })
-    }).finally(() => {
-      runInAction(() => {
-        this.isDeleting = false
-      })
-    })
-  }
-
-  @action reset() {
-    this.data = []
-    this.page = 0
-    this.deleteId = null
-    this.hasMore = false
-    this.isDeleting = false
-  }
-}
-
-export default new ListStore()
+})

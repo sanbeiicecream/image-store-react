@@ -1,19 +1,22 @@
-import styled from 'styled-components';
+import stylex from '@stylexjs/stylex';
 
-const StyleFooter = styled.footer`
-  height: 4vh;
-  padding-top: 8px;
-  text-align: center;
-  font-size: 0.8rem;
-  color: #aaa;
-  overflow: hidden;
-`;
+const styles = stylex.create({
+  footer: {
+    display: 'flex',
+    height: '4vh',
+    fontSize: '0.8rem',
+    justifyContent: 'center',
+    alignItems: 'center',
+    color: '#aaa',
+  },
+});
+
 function Footer() {
   return (
     <>
-      <StyleFooter>
-        <p>&copy;相信美好的事情即将发生~</p>
-      </StyleFooter>
+      <footer {...stylex.props(styles.footer)}>
+        &copy;相信美好的事情即将发生~
+      </footer>
     </>
   );
 }

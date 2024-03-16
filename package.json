@@ -11,24 +11,24 @@
   },
   "dependencies": {
     "@ant-design/icons": "^5.3.1",
+    "@stylexjs/stylex": "^0.5.1",
     "antd": "^5.15.0",
-    "jotai": "^2.7.0",
-    "mobx": "^6.12.0",
     "mobx-react": "^9.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-infinite-scroll-component": "^6.1.0",
     "react-router-dom": "^6.22.2",
-    "styled-components": "^6.1.8"
+    "zustand": "^4.5.2"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.23.10",
-    "@babel/plugin-proposal-decorators": "^7.24.0",
-    "@babel/plugin-transform-class-properties": "^7.23.3",
     "@babel/preset-env": "^7.24.0",
     "@babel/preset-react": "^7.23.3",
     "@rollup/plugin-babel": "^6.0.4",
     "@rollup/plugin-node-resolve": "^15.2.3",
+    "@stylexjs/babel-plugin": "^0.5.1",
+    "@stylexjs/eslint-plugin": "^0.5.1",
+    "@stylexjs/rollup-plugin": "^0.5.1",
     "@types/node": "^20.11.25",
     "@types/react": "^18.2.56",
     "@types/react-dom": "^18.2.19",
@@ -37,6 +37,7 @@
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
+    "prop-types": "^15.8.1",
     "vite": "^5.1.4"
   }
 }

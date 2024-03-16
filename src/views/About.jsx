@@ -1,24 +1,34 @@
-import styled from 'styled-components';
+import stylex from '@stylexjs/stylex';
 
-const Image = styled.img`
-  height: 23em;
-  opacity: 0.8;
-  background-size: cover;
-`;
+const styles = stylex.create({
+  image: {
+    height: {
+      default: '23em',
+      '@media(max-width: 550px)': null,
+    },
+    width: {
+      default: null,
+      '@media(max-width: 550px)': '80vw',
+    },
+    opacity: '0.8',
+    backgroundSize: 'cover',
+  },
+});
 
 function About() {
   return (
     <>
-      <Image
+      <img
         className='aboutImage'
         src={`https://image.jysgdyc.top/image-store/3%20(15).jpg?height=${
           23 * 16
         }`}
+        {...stylex.props(styles.image)}
       />
       <article>
         <h1>项目介绍</h1>
         <p style={{ fontSize: '1em' }}>
-          前端使用Vite、React、React-Router、Jotai、Ant Design、StyleX完成
+          前端使用Vite、React、React-Router、Zustand、Ant Design、StyleX完成
           <br />
           后端使用EggJS、MariaDB、开源分布式对象存储minio、imgproxy完成
         </p>

@@ -1,53 +1,24 @@
-import { action, makeObservable, observable, runInAction } from 'mobx';
-// import {Uploader} from '../models/index'
-import { Uploader } from '../models';
+import { Uploader } from '@/models';
 
-class ImageStore {
-  constructor() {
-    makeObservable(this);
-  }
-  @observable serverFile = null;
-  @observable file = null;
-  @observable filename = '';
-  @observable isUploading = false;
-  @observable info = {
+
+export const imageStore = (set, get) => ({
+  uploadFileUrl: null,
+  file: null,
+  filename: '',
+  info: {
     startingByte: 0,
     fileId: '',
-  };
-
-  @action setFile(file) {
-    this.file = file;
+  },
+  setFileInfo: (file, filename) => {
+    set({ file, filename })
+  },
+  uploadFile: async () => {
+    set({ uploadFileUrl: null })
+    const res = await Uploader.add(get().file, get().filename)
+    set({ uploadFileUrl: res?.data?.url })
+    return res
+  },
+  resetFileInfo: () => {
+    set({ uploadFileUrl: null })
   }
-
-  @action setFilename(filename) {
-    this.filename = filename;
-  }
-
-  @action upload() {
-    this.isUploading = true;
-    this.serverFile = null;
-    return new Promise((resolve, reject) => {
-      Uploader.add(this.file, this.filename)
-        .then(res => {
-          runInAction(() => {
-            this.serverFile = res.url;
-          });
-          resolve(res.url);
-        })
-        .catch(error => {
-          reject(error);
-        })
-        .finally(() => {
-          runInAction(() => {
-            this.isUploading = false;
-          });
-        });
-    });
-  }
-
-  @action reset() {
-    this.serverFile = null;
-  }
-}
-
-export default new ImageStore();
+})

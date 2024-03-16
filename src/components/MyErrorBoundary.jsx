@@ -1,5 +1,6 @@
-import React from 'react';
-class ErrorBoundary extends React.Component {
+import { Component } from 'react';
+
+class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
     this.state = { hasError: false };
@@ -18,6 +19,7 @@ class ErrorBoundary extends React.Component {
       // 你可以自定义降级后的 UI 并渲染
       return <h1>Something went wrong.</h1>;
     }
+    // eslint-disable-next-line react/prop-types
     return this.props.children;
   }
 }

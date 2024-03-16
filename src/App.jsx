@@ -1,33 +1,58 @@
 import './App.css';
 import { Header } from './components/Header.jsx';
 import { Route, Routes, Navigate } from 'react-router-dom';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { Footer } from './components/Footer.jsx';
 import { Loading } from './components/Loading.jsx';
-import styled from 'styled-components';
 import MyErrorBoundary from './components/MyErrorBoundary.jsx';
+import { useNavigate } from 'react-router-dom';
 import 'antd/dist/reset.css';
-import { Spin } from 'antd';
-import { useAtom } from 'jotai';
-import { globalStateAtom } from '@/main';
+import { Spin, message } from 'antd';
+import { useStore } from '@/stores';
+import stylex from '@stylexjs/stylex';
 
 const Home = lazy(() => import('./views/Home').then());
 const ViewHistory = lazy(() => import('./views/ViewHistory').then());
 const About = lazy(() => import('./views/About').then());
 const RegisterOrLogin = lazy(() => import('./views/RegisterOrLogin').then());
 
-const Main = styled.div`
-  height: calc(100vh - 6vh - 4vh);
-  flex-grow: 1;
-  overflow: auto;
-  padding: 20px 20px 0 20px;
-`;
+const styles = stylex.create({
+  main: {
+    height: 'calc(100vh - 6vh - 4vh - 20px)',
+    flexGrow: 1,
+    overflow: 'auto',
+    padding: '20px 20px 0 20px',
+  },
+});
 function App() {
-  const [globalState] = useAtom(globalStateAtom);
+  const loading = useStore(set => set.loading);
+  const initalUser = useStore(state => state.initalUser);
+  const currentUser = useStore(state => state.currentUser);
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (
+      !localStorage.getItem('authorization') ||
+      localStorage.getItem('authorization') === 'undefined' ||
+      currentUser
+    ) {
+      return;
+    }
+    // TODO 成功获取数据后需要做一下路由鉴权
+    initalUser()
+      .then(() => {
+        if (
+          window.location.hash?.includes('register') ||
+          window.location.hash?.includes('login')
+        ) {
+          navigate('/home');
+        }
+      })
+      .catch(res => message.error(res.msg));
+  }, [currentUser, initalUser, navigate]);
   return (
-    <Spin spinning={globalState.loading} tip='上传中'>
+    <Spin spinning={loading} tip='上传中'>
       <Header />
-      <Main id='scrollableDiv'>
+      <main id='scrollableDiv' {...stylex.props(styles.main)}>
         <MyErrorBoundary>
           <Routes>
             <Route path='/' element={<Navigate replace to='/home' />} />
@@ -74,7 +99,7 @@ function App() {
             />
           </Routes>
         </MyErrorBoundary>
-      </Main>
+      </main>
       <Footer />
     </Spin>
   );

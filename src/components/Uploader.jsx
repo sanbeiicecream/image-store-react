@@ -1,69 +1,71 @@
-import { observer, useLocalObservable } from 'mobx-react';
 import { Upload, message, Image } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
-import { useStores } from '../stores/index';
-import styled from 'styled-components';
-import { useEffect, useRef } from 'react';
+import { useStore } from '@/stores';
+import { useRef } from 'react';
 import { judgeFileType } from '@/utils/tool';
-import { useAtom } from 'jotai';
-import { globalStateAtom } from '@/main.jsx';
+import stylex from '@stylexjs/stylex';
+import { create } from 'zustand';
 
 const { Dragger } = Upload;
-const Result = styled.div`
-  margin-top: 30px;
-  border: 1px dashed #ccc;
-  padding: 20px;
-`;
-const H1 = styled.h1`
-  margin: 20px 0;
-  text-align: center;
-`;
 
-const Uploader = observer(() => {
-  const [globalState, setGlobalState] = useAtom(globalStateAtom);
+const styles = stylex.create({
+  result: {
+    marginTop: '30px',
+    borderWidth: '1px',
+    borderStyle: 'dashed',
+    borderColor: '#ccc',
+    padding: '20px',
+  },
+  title: {
+    margin: '20px 0',
+    textAlign: 'center',
+  },
+  marginTB8: {
+    margin: '8px 0',
+  },
+});
+
+const useLocalStore = create(set => ({
+  widthStr: 'width=',
+  heightStr: 'height=',
+  setWidth: width => {
+    set({
+      widthStr: `width=${width || ''}`,
+    });
+  },
+  setHeight: height => {
+    set({ heightStr: `height=${height || ''}` });
+  },
+}));
+
+const Uploader = () => {
+  const setLoading = useStore(state => state.setLoading);
   const ref1 = useRef();
   const ref2 = useRef();
-  const store = useLocalObservable(() => ({
-    width: null,
-    height: null,
-    setWidth(width) {
-      this.width = width;
-    },
-    setHeight(height) {
-      this.height = height;
-    },
-    get widthStr() {
-      return `width=${this.width || ''}`;
-    },
-    get heightStr() {
-      return `height=${this.height || ''}`;
-    },
-    get fullStr() {
-      if (this.widthStr || this.heightStr) {
-        return `${ImageStore.serverFile}?${this.widthStr}&${this.heightStr}`;
-      }
-      return ImageStore.serverFile;
-    },
-  }));
-  const { UserStore, ImageStore, ListStore } = useStores();
+  const resetList = useStore(state => state.resetList);
+  const currentUser = useStore(state => state.currentUser);
+  const setFileInfo = useStore(state => state.setFileInfo);
+  const uploadFile = useStore(state => state.uploadFile);
+  const uploadFileUrl = useStore(state => state.uploadFileUrl);
+  const filename = useStore(state => state.filename);
+  const setWidth = useLocalStore(state => state.setWidth);
+  const setHeight = useLocalStore(state => state.setHeight);
+  const heightStr = useLocalStore(state => state.heightStr);
+  const widthStr = useLocalStore(state => state.widthStr);
 
-  useEffect(() => {
-    return () => {
-      // ImageStore.reset();
-    };
-  }, [ImageStore]);
+  const fullStr = `${uploadFileUrl}?${widthStr}&${heightStr}`;
 
   const bindWidthChange = () => {
-    store.setWidth(ref1.current.value);
+    setWidth(ref1.current.value);
   };
 
   const bindHeightChange = () => {
-    store.setHeight(ref2.current.value);
+    setHeight(ref2.current.value);
   };
 
   const props = {
     beforeUpload: async file => {
-      if (UserStore.currentUser === null) {
+      if (currentUser === null) {
         message.warning('请先登录再上传！');
         return false;
       }
@@ -71,33 +73,31 @@ const Uploader = observer(() => {
         return false;
       }
       if (file.size > 1024 * 1024 * 5) {
-        message.error('最大上传大小5M', 2);
+        message.warning('最大上传大小5M', 2);
         return false;
       }
       if (!(await judgeFileType(file))) {
-        message.error('只能上传图片格式的文件', 2);
+        message.warning('只能上传图片格式的文件', 2);
         return false;
       }
-      ImageStore.setFile(file);
-      ImageStore.setFilename(file.name);
-      setGlobalState({ ...globalState, loading: true });
-      ImageStore.upload()
+      setFileInfo(file, file.name);
+      setLoading(true);
+      uploadFile()
         .then(() => {
           message.success('上传成功');
-          ListStore.reset();
+          resetList();
         })
         .catch(error => {
-          console.log(error);
           message.error(error.msg, 2);
         })
         .finally(() => {
-          setGlobalState({ ...globalState, spinning: false });
+          setLoading(false);
         });
       return false;
     },
     accept: 'image/*',
     showUploadList: false,
-    disabled: UserStore.currentUser === null,
+    disabled: currentUser === null,
   };
 
   return (
@@ -110,23 +110,23 @@ const Uploader = observer(() => {
         <p className='ant-upload-hint'>仅支持图片格式，大小不能超过5M</p>
       </Dragger>
       {/* {msg} */}
-      {ImageStore.serverFile ? (
-        <Result>
-          <H1>上传结果</H1>
+      {uploadFileUrl ? (
+        <div {...stylex.props(styles.result)}>
+          <h1 {...stylex.props(styles.title)}>上传结果</h1>
           <dl>
             <dt>线上地址</dt>
             <dd style={{ overflow: 'auto' }}>
-              <a href={ImageStore.serverFile} rel='noreferrer' target='_blank'>
-                {ImageStore.serverFile}
+              <a href={uploadFileUrl} rel='noreferrer' target='_blank'>
+                {uploadFileUrl}
               </a>
             </dd>
             <dt>文件名</dt>
-            <dd>{ImageStore.filename}</dd>
+            <dd>{filename}</dd>
             <dt>图片预览</dt>
             <dd>
               <Image
-                src={`${ImageStore.serverFile}?width=300`}
-                preview={{ src: store.fullStr }}
+                src={`${uploadFileUrl}?width=300`}
+                preview={{ src: uploadFileUrl }}
               />
             </dd>
             <dt>更多尺寸</dt>
@@ -135,23 +135,25 @@ const Uploader = observer(() => {
                 ref={ref1}
                 onChange={bindWidthChange}
                 placeholder='最大宽度（可选）'
+                {...stylex.props(styles.marginTB8)}
               />
               <input
                 ref={ref2}
                 onChange={bindHeightChange}
                 placeholder='最大高度（可选）'
+                {...stylex.props(styles.marginTB8)}
               />
             </dd>
             <dd style={{ overflow: 'auto' }}>
-              <a target='_blank' href={store.fullStr} rel='noreferrer'>
-                {store.fullStr}
+              <a target='_blank' href={fullStr} rel='noreferrer'>
+                {fullStr}
               </a>
             </dd>
           </dl>
-        </Result>
+        </div>
       ) : null}
     </div>
   );
-});
+};
 
 export { Uploader };
