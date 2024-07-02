@@ -13,15 +13,13 @@ export const authStore = (set, get) => ({
     localStorage.setItem('authorization', res?.data?.authorization);
     return await get().pullUser()
   },
-  register: () => {
-    return new Promise((resolve, reject) => {
-      Auth.register(this.values.username, this.values.password).then((res) => {
-        localStorage.setItem('authorization', res?.authorization);
-        get().pullUser(resolve, reject)
-      }).catch((error) => {
-        reject(error)
-      })
-    })
+  register: async () => {
+    const res = await Auth.register(get().username, get().password)
+    if (!res?.success) {
+      return res
+    }
+    localStorage.setItem('authorization', res?.data?.authorization);
+    return await get().pullUser()
   },
   logout: () => {
     get().resetUser()

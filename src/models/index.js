@@ -18,23 +18,21 @@ const Auth = {
       return { msg: '服务器开了小差，请稍后重试~', success: false }
     }
   },
-  register(username, password) {
-    return new Promise((resolve, reject) => {
-      fetch(api.USER_REGISTER, {
+  async register(username, password) {
+    try {
+      const blob = await fetch(api.USER_REGISTER, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: `username=${username}&password=${password}`,
       })
-        .then(blob => blob.json())
-        .then(json => {
-          return requestErrorHandle(json);
-        })
-        .catch(() => {
-          reject({ msg: '服务器开了小差，请稍后重试~' });
-        });
-    });
+      const json = await blob.json()
+      return requestErrorHandle(json);
+    } catch (e) {
+      console.error(e)
+      return { msg: '服务器开了小差，请稍后重试~', success: false }
+    }
   },
   getCurrentUser() {
     // return User.current()

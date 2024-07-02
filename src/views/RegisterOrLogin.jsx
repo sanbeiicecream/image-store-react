@@ -1,9 +1,9 @@
-import { Button, Form, Input } from 'antd';
-import { message } from 'antd';
-import { useStore } from '@/stores';
-import { useNavigate, Navigate, useLocation } from 'react-router-dom';
-import { useCallback, useEffect, useRef } from 'react';
-import stylex from '@stylexjs/stylex';
+import { Button, Form, Input } from 'antd'
+import { message } from 'antd'
+import { useStore } from '@/stores'
+import { useNavigate, Navigate, useLocation } from 'react-router-dom'
+import { useCallback, useEffect, useRef } from 'react'
+import stylex from '@stylexjs/stylex'
 
 const styles = stylex.create({
   title: {
@@ -26,7 +26,7 @@ const styles = stylex.create({
     display: 'flex',
     justifyContent: 'center',
   },
-});
+})
 
 const layout = {
   labelCol: {
@@ -35,69 +35,64 @@ const layout = {
   wrapperCol: {
     span: 18,
   },
-};
+}
 
 const validateUsername = (rule, value) => {
-  if (!value) return Promise.resolve();
-  if (/\W/.test(value)) return Promise.reject('只能是字母数字下划线');
+  if (!value) return Promise.resolve()
+  if (/\W/.test(value)) return Promise.reject('只能是字母数字下划线')
   if (value.length < 4 || value.length > 10)
-    return Promise.reject('长度为4~10个字符');
-  return Promise.resolve();
-};
+    return Promise.reject('长度为4~10个字符')
+  return Promise.resolve()
+}
 
 const validateConfirm = ({ getFieldValue }) => ({
   validator(rule, value) {
-    if (getFieldValue('password') === value) return Promise.resolve();
-    return Promise.reject('两次密码不一致');
+    if (getFieldValue('password') === value) return Promise.resolve()
+    return Promise.reject('两次密码不一致')
   },
-});
+})
 
 function RegisterOrLogin() {
-  const [form] = Form.useForm();
-  const currentUser = useStore(state => state.currentUser);
-  const setUsername = useStore(state => state.setUsername);
-  const setPassword = useStore(state => state.setPassword);
-  const login = useStore(state => state.login);
-  const register = useStore(state => state.register);
-  const loginStatus = useRef(false);
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const onFinishRegister = ({ username, password }) => {
-    setUsername(username);
-    setPassword(password);
-    register()
-      .then(() => {
-        navigate('/');
-      })
-      .catch(error => {
-        message.error(error.msg).then();
-        form.setFieldsValue({ username: '' });
-      });
-  };
+  const [form] = Form.useForm()
+  const currentUser = useStore(state => state.currentUser)
+  const setUsername = useStore(state => state.setUsername)
+  const setPassword = useStore(state => state.setPassword)
+  const login = useStore(state => state.login)
+  const register = useStore(state => state.register)
+  const loginStatus = useRef(false)
+  const navigate = useNavigate()
+  const location = useLocation()
 
   useEffect(() => {
     if (form) {
-      form.resetFields();
+      form.resetFields()
     }
-  }, [location, form]);
+  }, [location, form])
 
-  const onFinishLogin = useCallback(
-    async ({ username, password }) => {
-      loginStatus.current = true;
-      setUsername(username);
-      setPassword(password);
-      const res = await login();
-      if (res.success) {
-        message.success('登录成功', 0.8);
-        navigate('/');
-      } else {
-        message.error(res?.msg || '登录失败！');
+  const onFinish = useCallback(
+    async ({ username, password, type }) => {
+      loginStatus.current = true
+      setUsername(username)
+      setPassword(password)
+      const tem = {
+        req: async () => {
+          return type === 'login' ? await login() : await register()
+        },
+        successMsg: type === 'login' ? '登录成功' : '注册成功',
+        failMsg: type === 'login' ? '登录失败！' : '注册失败',
       }
-      loginStatus.current = false;
+      const res = await tem.req()
+      if (res.success) {
+        message.success(tem.successMsg, 0.8).then(() => {
+          navigate('/')
+        })
+      } else {
+        message.error(res?.msg || tem.failMsg)
+      }
+      loginStatus.current = false
     },
-    [login, setPassword, setUsername, navigate]
-  );
+    [setUsername, setPassword, login, register, navigate]
+  )
 
   return (
     <div {...stylex.props(styles.wrapper)}>
@@ -108,9 +103,9 @@ function RegisterOrLogin() {
       <Form
         {...layout}
         name='basic'
-        onFinish={
-          location.pathname === '/register' ? onFinishRegister : onFinishLogin
-        }
+        onFinish={res => {
+          onFinish({ ...res, type: location.pathname.replace('/', '') })
+        }}
         form={form}
         autoComplete='off'
       >
@@ -159,7 +154,7 @@ function RegisterOrLogin() {
               rules={[
                 {
                   required: true,
-                  message: '再次确认密码',
+                  message: '',
                 },
                 validateConfirm,
               ]}
@@ -214,7 +209,7 @@ function RegisterOrLogin() {
         </div>
       </Form>
     </div>
-  );
+  )
 }
 
-export default RegisterOrLogin;
+export default RegisterOrLogin
