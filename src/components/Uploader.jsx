@@ -1,134 +1,151 @@
-import {observer, useLocalObservable} from 'mobx-react'
-import {Upload, message, Spin} from 'antd'
-import {InboxOutlined} from '@ant-design/icons'
-import {useStores} from '../stores'
-import styled from 'styled-components'
-import {useEffect, useRef} from 'react'
+import { observer, useLocalObservable } from 'mobx-react';
+import { Upload, message, Spin } from 'antd';
+import { InboxOutlined } from '@ant-design/icons';
+import { useStores } from '../stores/index';
+import styled from 'styled-components';
+import { useEffect, useRef } from 'react';
+import { judgeFileType } from 'utils/tool';
 
-const {Dragger} = Upload
+const { Dragger } = Upload;
 const Result = styled.div`
   margin-top: 30px;
   border: 1px dashed #ccc;
   padding: 20px;
-`
+`;
 const H1 = styled.h1`
   margin: 20px 0;
   text-align: center;
-`
+`;
 const Image = styled.img`
   max-width: 300px;
-`
+`;
 const Uploader = observer(() => {
-  const ref1 = useRef()
-  const ref2 = useRef()
+  const ref1 = useRef();
+  const ref2 = useRef();
   const store = useLocalObservable(() => ({
     width: null,
+    height: null,
     setWidth(width) {
-      store.width = width
+      this.width = width;
+    },
+    setHeight(height) {
+      this.height = height;
     },
     get widthStr() {
-      return store.width ? `/thumbnail/${store.width}x` : ''
-    },
-    height: null,
-    setHeight(height) {
-      store.height = height
+      return `width=${this.width || ''}`;
     },
     get heightStr() {
-      return store.height ? `/thumbnail/x${store.height}` : ''
+      return `height=${this.height || ''}`;
     },
     get fullStr() {
-      return ImageStore.serverFile + '?imageMogr2/' + store.heightStr + store.widthStr
-    }
-  }))
-  
+      if (this.widthStr || this.heightStr) {
+        return `${ImageStore.serverFile}?${this.widthStr}&${this.heightStr}`;
+      }
+      return ImageStore.serverFile;
+    },
+  }));
+  const { UserStore, ImageStore, ListStore } = useStores();
+
   useEffect(() => {
     return () => {
-      ImageStore.reset()
-    }
-  }, [])
-  
+      ImageStore.reset();
+    };
+  }, [ImageStore]);
+
   const bindWidthChange = () => {
-    store.setWidth(ref1.current)
-  }
-  
+    store.setWidth(ref1.current.value);
+  };
+
   const bindHeightChange = () => {
-    store.setHeight(ref2.current)
-  }
-  
-  const {UserStore, ImageStore} = useStores()
-  
+    store.setHeight(ref2.current.value);
+  };
+
   const props = {
-    beforeUpload: (file) => {
+    beforeUpload: async file => {
       if (UserStore.currentUser === null) {
-        message.warning('请先登录再上传！').then()
-        return false
+        message.warning('请先登录再上传！');
+        return false;
       }
       if (file.length > 0) {
-        return false
+        return false;
       }
-      if (!/(svg$)|(png$)|(jpg$)|(jpeg$)|(gif$)/ig.test(file.type)) {
-        message.error('只能上传png/svg/jpg/gif格式的文件', 2).then()
-        return false
+      if (file.size > 1024 * 1024 * 5) {
+        message.error('最大上传大小5M', 2);
+        return false;
       }
-      
-      if (file.size > 1024 * 1024 * 2){
-        message.error('图片最大2M',2).then()
-        return false
+      if (!(await judgeFileType(file))) {
+        message.error('只能上传图片格式的文件', 2);
+        return false;
       }
-      
-      ImageStore.setFile(file)
-      ImageStore.setFilename(file.name)
-      ImageStore.upload().then((serverFile) => {
-      
-      }).catch((error) => {
-        console.log(error)
-      })
-      return false
+      ImageStore.setFile(file);
+      ImageStore.setFilename(file.name);
+      ImageStore.upload()
+        .then(() => {
+          message.success('上传成功');
+          ListStore.reset();
+        })
+        .catch(error => {
+          console.log(error);
+          message.error(error.msg, 2);
+        });
+      return false;
     },
-    
+    accept: 'image/*',
     showUploadList: false,
-    disabled: UserStore.currentUser === null
-  }
+    disabled: UserStore.currentUser === null,
+  };
+
   return (
     <div>
       <Spin spinning={ImageStore.isUploading}>
         <Dragger {...props}>
-          <p className="ant-upload-drag-icon">
-            <InboxOutlined/>
+          <p className='ant-upload-drag-icon'>
+            <InboxOutlined />
           </p>
-          <p className="ant-upload-text">点击或者拖拽上传图片</p>
-          <p className="ant-upload-hint">
-            仅支持图片格式，大小不能超过2M
-          </p>
+          <p className='ant-upload-text'>点击或者拖拽上传图片</p>
+          <p className='ant-upload-hint'>仅支持图片格式，大小不能超过5M</p>
         </Dragger>
+        {/* {msg} */}
       </Spin>
-      {
-        ImageStore.serverFile ? <Result>
+      {ImageStore.serverFile ? (
+        <Result>
           <H1>上传结果</H1>
           <dl>
             <dt>线上地址</dt>
-            <dd style={{overflow: 'auto'}}><a href={ImageStore.serverFile} rel="noreferrer"
-                                              target="_blank">{ImageStore.serverFile}</a>
+            <dd style={{ overflow: 'auto' }}>
+              <a href={ImageStore.serverFile} rel='noreferrer' target='_blank'>
+                {ImageStore.serverFile}
+              </a>
             </dd>
             <dt>文件名</dt>
             <dd>{ImageStore.filename}</dd>
             <dt>图片预览</dt>
             <dd>
-              <Image src={ImageStore.serverFile}/>
+              <Image src={`${ImageStore.serverFile}?width=300`} />
             </dd>
             <dt>更多尺寸</dt>
             <dd>
-              <input ref={ref1} onChange={bindWidthChange} placeholder="最大宽度（可选）"/>
-              <input ref={ref2} onChange={bindHeightChange} placeholder="最大高度（可选）"/>
+              <input
+                ref={ref1}
+                onChange={bindWidthChange}
+                placeholder='最大宽度（可选）'
+              />
+              <input
+                ref={ref2}
+                onChange={bindHeightChange}
+                placeholder='最大高度（可选）'
+              />
             </dd>
-            <dd style={{overflow: 'auto'}}>
-              <a target="_blank" href={store.fullStr} rel="noreferrer">{store.fullStr}</a>
+            <dd style={{ overflow: 'auto' }}>
+              <a target='_blank' href={store.fullStr} rel='noreferrer'>
+                {store.fullStr}
+              </a>
             </dd>
           </dl>
-        </Result> : null
-      }
+        </Result>
+      ) : null}
     </div>
-  )
-})
+  );
+});
 
-export {Uploader}
+export { Uploader };

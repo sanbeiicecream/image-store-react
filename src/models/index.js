@@ -1,156 +1,130 @@
-import AV, {User} from 'leancloud-storage'
-import COS from 'cos-js-sdk-v5'
-
-// 腾讯云cos的初始化信息
-const Bucket = 'xxxxxxxxxxxxx'
-const Region = 'xxxxxxxxxxxxxxx'
-
-// LeanCloud的初始化信息
-AV.init({
-  appId: 'xxxxxxxxxx',
-  appKey: 'xxxxxxxxxxxxxx',
-  serverURL: 'xxxxxxxxxxxxxxxxxx'
-})
+import api from '../api/index';
+import { requestErrorHandle } from '../utils/errorHandle';
 
 const Auth = {
   login(username, password) {
     return new Promise((resolve, reject) => {
-      User.logIn(username, password).then((user) => {
-        resolve(user)
-      }, (error) => {
-        reject(error)
+      fetch(api.USER_LOGIN, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `username=${username}&password=${password}`,
       })
-    })
+        .then(blob => blob.json())
+        .then(json => {
+          const tem = requestErrorHandle(json);
+          tem.success ? resolve(tem.data) : reject(tem);
+        })
+        .catch(() => {
+          reject({ msg: '服务器开了小差，请稍后重试~' });
+        });
+    });
   },
   register(username, password) {
-    let user = new User()
-    user.setUsername(username)
-    user.setPassword(password)
     return new Promise((resolve, reject) => {
-      user.signUp().then((user) => {
-        resolve(user)
-      }, (error) => {
-        reject(error)
+      fetch(api.USER_REGISTER, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `username=${username}&password=${password}`,
       })
-    })
-  },
-  logout() {
-    return User.logOut()
+        .then(blob => blob.json())
+        .then(json => {
+          const tem = requestErrorHandle(json);
+          tem.success ? resolve(tem.data) : reject(tem);
+        })
+        .catch(() => {
+          reject({ msg: '服务器开了小差，请稍后重试~' });
+        });
+    });
   },
   getCurrentUser() {
-    return User.current()
-  }
-}
+    // return User.current()
+    return new Promise((resolve, reject) => {
+      fetch(api.USER, {
+        method: 'GET',
+        headers: { authorization: localStorage.getItem('authorization') },
+      })
+        .then(blob => blob.json())
+        .then(res => {
+          const tem = requestErrorHandle(res);
+          tem.success ? resolve(tem.data) : reject(tem);
+        })
+        .catch(() => {
+          reject({ msg: '服务器开了小差，请稍后重试~' });
+        });
+    });
+  },
+};
 
 const Uploader = {
-  cos: new COS({
-    getAuthorization: function (options, callback) {
-      const url = 'xxxxxxxxxxxxxxxxx' // 这里替换成您的服务接口地址
-      const xhr = new XMLHttpRequest()
-      xhr.open('GET', url, true)
-      xhr.onload = function (e) {
-        let data
-        let credentials
-        try {
-          data = JSON.parse(e.target.responseText)
-          credentials = data.credentials
-        } catch (e) {
-        }
-        if (!data || !credentials) return console.error('credentials invalid')
-        callback({
-          TmpSecretId: credentials.tmpSecretId,
-          TmpSecretKey: credentials.tmpSecretKey,
-          XCosSecurityToken: credentials.sessionToken,
-          StartTime: data.startTime, // 时间戳，单位秒，如：1580000000，建议返回服务器时间作为签名的开始时间，避免用户浏览器本地时间偏差过大导致签名错误
-          ExpiredTime: data.expiredTime, // 时间戳，单位秒，如：1580000900
-        })
-      }
-      xhr.send()
-    }
-  }),
   add(file, filename) {
     return new Promise((resolve, reject) => {
-      this.cos.sliceUploadFile({
-          Bucket: Bucket,
-          Region: Region,
-          Key: filename,
-          Body: file,
-          onHashProgress: function (progressData) {
-            console.log('校验中', JSON.stringify(progressData))
-          },
-          onProgress: function (progressData) {
-            console.log('上传中', JSON.stringify(progressData))
-          },
+      const formData = new FormData();
+      formData.append('filename', filename);
+      formData.append('file', file);
+      fetch(api.IMAGE_UPLOAD, {
+        method: 'POST',
+        headers: {
+          // 'Content-Type': '',
+          authorization: localStorage.getItem('authorization'),
         },
-        function (error, data) {
-          if (error) {
-            reject(error)
-          } else {
-            const url = 'https://' + data.Location
-            const item = new AV.Object('Image')
-            const avFile = new AV.File.withURL(filename, url)
-            item.set('filename', filename)
-            item.set('owner', AV.User.current())
-            item.set('url', avFile)
-            item.save().then(() => resolve(url)).catch(error => reject(error))
-          }
-        })
-    })
-  },
-  
-  find({page, limit}) {
-    const query = new AV.Query('Image')
-    query.include('owner')
-    query.equalTo('owner', User.current())
-    query.limit(limit)
-    query.skip(page * limit)
-    query.descending('createdAt')
-    return new Promise((resolve, reject) => {
-      query.find().then(list => resolve(list)).catch(error => reject(error))
-    })
-  },
-  
-  delete({id, filename}) {
-    return new Promise((resolve, reject) => {
-      this.queryCount({name: filename}).then((count) => {
-        const image = AV.Object.createWithoutData('Image', id + '')
-        image.destroy().then((data) => {
-          if (count === 1) {
-            this.cos.deleteObject({
-              Bucket, /* 必须 */
-              Region,     /* 存储桶所在地域，必须字段 */
-              Key: filename        /* 必须 */
-            }, function (error, data) {
-              if (error) {
-                reject(error)
-              } else if (data) {
-                resolve()
-              }
-            })
-          } else {
-            resolve()
-          }
-        }).catch((error) => {
-          reject(error)
-        })
-      }).catch((error) => {
-        reject(error)
+        body: formData,
       })
-    })
+        .then(blob => blob.json())
+        .then(json => {
+          const tem = requestErrorHandle(json);
+          tem.success ? resolve(tem.data) : reject(tem);
+        })
+        .catch(() => {
+          reject({ msg: '服务器开了小差，请稍后重试~' });
+        });
+    });
   },
-  queryCount({name}) {
-    const query = new AV.Query('Image')
-    query.equalTo('filename', name)
+
+  find({ page, limit }) {
     return new Promise((resolve, reject) => {
-      query.count().then((count) => {
-        resolve(count)
-      }).catch((error) => {
-        reject(error)
+      fetch(api.IMAGE_Find, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          authorization: localStorage.getItem('authorization'),
+        },
+        body: `page=${page}&size=${limit}`,
       })
-    })
-  }
-}
+        .then(blob => blob.json())
+        .then(json => {
+          const tem = requestErrorHandle(json);
+          tem.success ? resolve(tem.data) : reject(tem);
+        })
+        .catch(() => {
+          reject({ msg: '服务器开了小差，请稍后重试~' });
+        });
+    });
+  },
 
-window.uploader = Uploader
+  delete({ id }) {
+    return new Promise((resolve, reject) => {
+      fetch(api.IMAGE_REMOVE, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          authorization: localStorage.getItem('authorization'),
+        },
+        body: `id=${id}`,
+      })
+        .then(blob => blob.json())
+        .then(json => {
+          const tem = requestErrorHandle(json);
+          tem.success ? resolve(tem.data) : reject(tem);
+        })
+        .catch(() => {
+          reject({ msg: '服务器开了小差，请稍后重试~' });
+        });
+    });
+  },
+};
 
-export {Auth, Uploader}
+export { Auth, Uploader };

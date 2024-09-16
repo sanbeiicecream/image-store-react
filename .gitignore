@@ -11,8 +11,9 @@
 /.idea
 # production
 /build
-
-/config
+/src/api
+=**
+.vscode
 
 # misc
 .DS_Store
