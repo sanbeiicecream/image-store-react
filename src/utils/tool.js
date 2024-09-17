@@ -9,7 +9,6 @@ async function judgeFileType(file, type = 'image') {
   };
   if (!file || !binHeadMap[type]) return;
   const buffers = await readBuffer(file, 0, 8);
-  console.log(buffers);
   const uint8Array = new Uint8Array(buffers);
   let flag = false;
   for (let key in binHeadMap[type]) {

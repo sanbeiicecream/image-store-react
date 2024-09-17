@@ -1,10 +1,10 @@
-import {ListComponent} from 'components/List'
+import { ListComponent } from '@/components/List';
 
-function ViewHistory(){
-  return(
+function ViewHistory() {
+  return (
     <>
-      <ListComponent/>
+      <ListComponent />
     </>
-  )
+  );
 }
-export default ViewHistory
+export default ViewHistory;

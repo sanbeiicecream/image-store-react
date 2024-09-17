@@ -1,43 +1,51 @@
-import { observer } from 'mobx-react';
-import { List, message, Avatar, Skeleton, Divider, Button, Spin } from 'antd';
+import { List, message, Image, Skeleton, Divider, Button, Spin } from 'antd';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import { useStores } from '../stores';
+import { useStore } from '../stores';
 import { useCallback, useEffect } from 'react';
 import { Modal } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
-import styled from 'styled-components';
+import stylex from '@stylexjs/stylex';
 
 const { confirm } = Modal;
+const styles = stylex.create({
+  sticky: {
+    display: 'inline-block',
+    position: 'sticky',
+    top: '0',
+    left: '100%',
+    zIndex: '1000',
+    margin: '-20px',
+    fontSize: '12px',
+    width: '1em',
+    textAlign: 'center',
+  },
+});
 
-const StickyDiv = styled.div`
-  display: inline-block;
-  position: sticky;
-  top: 0px;
-  left: 100%;
-  z-index: 1000;
-  margin: -20px;
-  font-size: 12px;
-  width: 1em;
-  text-align: center;
-`;
-
-const ListComponent = observer(() => {
-  const { ListStore, UserStore } = useStores();
+const ListComponent = () => {
+  const findList = useStore(state => state.findList);
+  const listData = useStore(state => state.listData);
+  const listHasMore = useStore(state => state.listHasMore);
+  const listCount = useStore(state => state.listCount);
+  const listIsFinding = useStore(state => state.listIsFinding);
+  const listIsDeleting = useStore(state => state.listIsDeleting);
+  const deleteListItem = useStore(state => state.deleteListItem);
+  const resetUser = useStore(state => state.resetUser);
+  const currentUser = useStore(state => state.currentUser);
   const loadMoreData = useCallback(() => {
-    ListStore.find()
+    findList()
       .then()
-      .catch(error => {
+      .catch(() => {
         message.error('获取失败', 2).then(() => {
-          UserStore.resetUser();
+          resetUser();
         });
       });
-  }, [ListStore, UserStore]);
+  }, [findList, resetUser]);
 
   useEffect(() => {
-    if (UserStore.currentUser && ListStore.data.length === 0) {
+    if (currentUser && listData.length === 0) {
       loadMoreData();
     }
-  }, [ListStore.data.length, UserStore.currentUser, loadMoreData]);
+  }, [listData, currentUser, loadMoreData]);
 
   const copyImageURL = item => {
     if (navigator.clipboard) {
@@ -46,7 +54,7 @@ const ListComponent = observer(() => {
         .then(() => {
           message.success('复制成功');
         })
-        .catch(e => {
+        .catch(() => {
           message.warning('复制失败');
         });
     } else {
@@ -71,29 +79,30 @@ const ListComponent = observer(() => {
       okType: 'danger',
       cancelText: '否',
       centered: true,
-      onOk() {
-        ListStore.deleteId = item.id;
-        ListStore.delete()
-          .then(() => {
-            message.success('删除成功', 0.5).then();
-          })
-          .catch(error => {
-            console.log(error);
-            message.error('删除失败', 0.5).then();
-          });
+      async onOk() {
+        const res = await deleteListItem(item.id);
+        if (res?.success) {
+          message.success('删除成功', 0.5).then();
+        } else {
+          message.error('删除失败', 0.5).then();
+        }
       },
       onCancel() {},
     });
   };
 
+  const editImage = () => {
+    message.info('开发中...');
+  };
+
   return (
     <>
-      {UserStore.currentUser && (
-        <StickyDiv>
+      {currentUser && (
+        <div {...stylex.props(styles.sticky)}>
           <span>共</span>
-          {ListStore.count}
+          {listCount}
           <span>张</span>
-        </StickyDiv>
+        </div>
       )}
       <textarea
         id='urlTextarea'
@@ -108,19 +117,17 @@ const ListComponent = observer(() => {
         }}
       />
       <div>
-        <Spin spinning={ListStore.isFinding || ListStore.isDeleting}>
+        <Spin spinning={listIsFinding || listIsDeleting}>
           <InfiniteScroll
-            dataLength={ListStore.data.length}
+            dataLength={listData.length}
             next={loadMoreData}
-            hasMore={ListStore.hasMore}
+            hasMore={listHasMore}
             loader={<Skeleton avatar paragraph={{ rows: 1 }} active />}
-            endMessage={
-              ListStore.isFinding && <Divider plain>~到底了~</Divider>
-            }
+            endMessage={listIsFinding && <Divider plain>~到底了~</Divider>}
             scrollableTarget='scrollableDiv'
           >
             <List
-              dataSource={ListStore.data}
+              dataSource={listData}
               itemLayout='horizontal'
               renderItem={item => (
                 <List.Item
@@ -131,6 +138,7 @@ const ListComponent = observer(() => {
                       onClick={() => {
                         copyImageURL(item);
                       }}
+                      key={item.id}
                     >
                       复制
                     </Button>,
@@ -140,32 +148,37 @@ const ListComponent = observer(() => {
                       onClick={() => {
                         deleteImage(item);
                       }}
+                      key={item.id}
                     >
                       删除
+                    </Button>,
+                    <Button
+                      data-id={item.id}
+                      size='small'
+                      onClick={() => {
+                        editImage(item);
+                      }}
+                      key={item.id}
+                    >
+                      编辑
                     </Button>,
                   ]}
                 >
                   <List.Item.Meta
                     avatar={
-                      <Avatar
+                      <Image
                         src={`${item.url}?width=${12 * 16}`}
                         style={{
                           width: '12em',
                           height: '8em',
                           borderRadius: '0',
                         }}
+                        preview={{
+                          src: item.url,
+                        }}
                       />
                     }
-                    title={
-                      <a
-                        href={item.url}
-                        style={{
-                          width: '8em',
-                        }}
-                      >
-                        {item.name}
-                      </a>
-                    }
+                    title={<span>{item.name}</span>}
                   />
                 </List.Item>
               )}
@@ -175,6 +188,6 @@ const ListComponent = observer(() => {
       </div>
     </>
   );
-});
+};
 
 export { ListComponent };

@@ -1,0 +1,8 @@
+  .nav-link {
+    color: #fff;
+    margin-left: 2.5em;
+  }
+
+  .nav-link.active {
+    border-bottom: 1px solid #fff;
+  }
